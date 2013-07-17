@@ -12,8 +12,7 @@ compile: main.o ${OBJECTS}
 	gcc $? -lncurses -o compiled.out
 
 clean:
-	rm compiled.out
-	rm *.o
+	rm *.o compiled.out
 
 main.o: main.c ${SOURCES} ${HEADERS}
 	gcc -c main.c
