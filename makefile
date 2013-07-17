@@ -4,15 +4,15 @@ HEADERS = ${OBJECTS,  .o=.h}
 SELF = ${@, .o=.c} ${@, .o=.h}
 
 all: compile
-	./compiled
+	./compiled.out
 	read null
 	clean
 
 compile: main.o ${OBJECTS}
-	gcc $? -lncurses -o compiled
+	gcc $? -lncurses -o compiled.out
 
 clean:
-	rm compiled
+	rm compiled.out
 	rm *.o
 
 main.o: main.c ${SOURCES} ${HEADERS}
