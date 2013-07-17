@@ -1,4 +1,4 @@
-OBJECTS =
+OBJECTS = engine.o
 SOURCES = ${OBJECTS,  .o=.c}
 HEADERS = ${OBJECTS,  .o=.h}
 SELF = ${@, .o=.c} ${@, .o=.h}
@@ -17,3 +17,6 @@ clean:
 
 main.o: main.c ${SOURCES} ${HEADERS}
 	gcc -c main.c
+
+engine.o: ${SELF}
+	gcc -c engine.c
