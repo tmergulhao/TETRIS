@@ -8,6 +8,7 @@
 #define SCREEN_BOTTOM	SCR_HEIGHT_ADD + 19
 
 #include <ncurses.h>
+#include <string.h>
 // #include <stdbool.h>
 // #include <time.h>
 
@@ -73,13 +74,13 @@ int Testar_Interface() {
 			name[]="Tiago Mergulhão",
 			email[]="me@tmergulhao.com",
 			line[]="_______________";
-	int ch;
+	int ch, i;
 
 	if (SCREEN_HEIGHT < 22 || SCREEN_WIDTH < 22) return 0;
 	
 	set_frame();
 	
-	mvprintw(SCR_HEIGHT_ADD + 1, CENTER(strlen(hello)),"%s",hello);
+	mvaddstr(SCR_HEIGHT_ADD + 1, CENTER(strlen(hello)),hello);
 	// mvprintw(SCR_HEIGHT_ADD + 2, CENTER(strlen("Width: ") + numlen(SCREEN_WIDTH)),"Width: %i", SCREEN_WIDTH); // %.3i
 	// mvprintw(SCR_HEIGHT_ADD + 3, CENTER(strlen("Height: ") + numlen(SCREEN_HEIGHT)),"Height: %i", SCREEN_HEIGHT);
 	
@@ -93,20 +94,36 @@ int Testar_Interface() {
 	refresh();
 
 	while ((ch = getch()) != KEY_SPACE) {
-
+		
 		clrline(SCREEN_BOTTOM - 1);
-
+		clrline(17);
+		
+		for(i = 0; i < 4; i++) {
+			mvaddch(13+i,(SCREEN_WIDTH - 8)/2 + 8, ' ');
+			mvaddch(13+i,(SCREEN_WIDTH - 8)/2 - 1, ' ');
+		}
+		/*
+		if (metronomy()) {
+			Iniciar_Peca(srand()%7);
+			Centralizar_Peca();
+		}
+		*/
+		
 		switch (ch) {
 			case KEY_UP:
+				// Rotacionar_Peca();
 				mvaddstr(SCREEN_BOTTOM - 1,(SCREEN_WIDTH - strlen("UP"))/2, "UP");
 				break;
 			case KEY_DOWN:
+				mvaddstr(17,(SCREEN_WIDTH - 8)/2, "vvvvvvvv");
 				mvaddstr(SCREEN_BOTTOM - 1,(SCREEN_WIDTH - strlen("DOWN"))/2, "DOWN");
 				break;
 			case KEY_LEFT:
+				for(i = 0; i < 4; i++) mvaddch(13+i,(SCREEN_WIDTH - 8)/2 - 1, '<');
 				mvaddstr(SCREEN_BOTTOM - 1,(SCREEN_WIDTH - strlen("LEFT"))/2, "LEFT");
 				break;
 			case KEY_RIGHT:
+				for(i = 0; i < 4; i++) mvaddch(13+i,(SCREEN_WIDTH - 8)/2 + 8, '>');
 				mvaddstr(SCREEN_BOTTOM - 1,(SCREEN_WIDTH - strlen("RIGHT"))/2, "RIGHT");
 				break;
 			default:
