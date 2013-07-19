@@ -1,13 +1,3 @@
-#define KEY_SPACE		32
-#define numlen(X) 		((X > 9) ? (X > 99) ? (X > 999) ? (X > 9999) ? (X > 99999) ? (X > 999999) ? (X > 9999999) ? 8 : 7 : 6 : 5 : 4 : 3 : 2 : 1)
-#define SCREEN_WIDTH 	sizeWidth()
-#define SCREEN_HEIGHT 	sizeHeight()
-#define SCR_WIDTH_ADD	(SCREEN_WIDTH - 22)/2 + 1
-#define SCR_HEIGHT_ADD	(SCREEN_HEIGHT - 22)/2 + 1
-#define CENTER(X)		SCR_WIDTH_ADD + (20 - (X))/2
-#define SCREEN_BOTTOM	SCR_HEIGHT_ADD + 19
-#define ESPERA_INPUT 	5 // seconds
-
 #include <ncurses.h>
 #include <string.h>
 #include <stdlib.h>
@@ -15,8 +5,34 @@
 // #include <stdbool.h>
 
 #include "engine.h"
-/* #include "tela.h" */
 #include "peca.h"
+// #include "tela.h"
+
+#define KEY_SPACE			32
+#define numlen(X) 			((X > 9) ? (X > 99) ? (X > 999) ? (X > 9999) ? (X > 99999) ? (X > 999999) ? (X > 9999999) ? 8 : 7 : 6 : 5 : 4 : 3 : 2 : 1)
+#define SCREEN_WIDTH 		sizeWidth()
+#define SCREEN_HEIGHT 		sizeHeight()
+#define SCR_WIDTH_ADD		(SCREEN_WIDTH - 22)/2 + 1
+#define SCR_HEIGHT_ADD		(SCREEN_HEIGHT - 22)/2 + 1
+#define CANVAS_WIDTH		20
+#define CENTER(X)			SCR_WIDTH_ADD + (CANVAS_WIDTH - (X))/2
+#define SCREEN_BOTTOM		SCR_HEIGHT_ADD + 19
+#define ESPERA_INPUT 		5 // seconds
+
+#define name				"+ TETRIS +"
+#define email				"me@tmergulhao.com"
+#define dev_name			"Tiago Mergulhão"
+
+#define final_words			"BYE!"
+
+#define clrline_a()			clrline(0)
+
+#define Desligar_Espera() 	set_metronomy(0)
+#define Valor_Espera(X) 	set_metronomy(X)
+#define Tempo_Espera() 		set_metronomy(-1)
+
+#define Mostrar_Peca()		display_piece(1)
+#define Apagar_Peca()		display_piece(0)
 
 int sizeWidth() {
 	static int width;
@@ -31,22 +47,19 @@ int sizeHeight() {
 	return height;
 }
 void Centralizar_Peca () {
-	PECA* PECA_ATUAL = Chamar_Peca();
-	PECA_ATUAL->Y = 11;
+	PECA* PECA_ATUAL = Chamar_Peca_Principal();
+	PECA_ATUAL->Y = 14;
 	PECA_ATUAL->X = 5;
 }
-void display_piece (int i) {
-	PECA* PECA_ATUAL = Chamar_Peca();
-
-	int j;
+void display_piece (int ON) {
+	PECA* PECA_ATUAL = Chamar_Peca_Principal();
+	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
 	
-	for (j = 0; j < 4; j++) {
-		if (i) mvaddstr((SCR_HEIGHT_ADD + PECA_ATUAL->Y + PECA_ATUAL->BLOCO[j].Y), (SCR_WIDTH_ADD + (PECA_ATUAL->X + PECA_ATUAL->BLOCO[j].X)*2), "[]");
-		else mvaddstr((SCR_HEIGHT_ADD + PECA_ATUAL->Y + PECA_ATUAL->BLOCO[j].Y), (SCR_WIDTH_ADD + (PECA_ATUAL->X + PECA_ATUAL->BLOCO[j].X)*2), "  ");
-	}
+	int i;
+	
+	for (i = 0; i < 4; i++)	if (ON) 	mvaddstr((SCR_HEIGHT_ADD + PECA_ATUAL->Y + BLOCO[i].Y), (SCR_WIDTH_ADD + (PECA_ATUAL->X + BLOCO[i].X)*2), 	"[]");
+							else 		mvaddstr((SCR_HEIGHT_ADD + PECA_ATUAL->Y + BLOCO[i].Y), (SCR_WIDTH_ADD + (PECA_ATUAL->X + BLOCO[i].X)*2), 	"  ");
 }
-void Mostrar_Peca () {	display_piece(1);	}
-void Apagar_Peca() {	display_piece(0);	}
 
 void clrline (int i) {
 	if (i) mvaddstr(i, SCR_WIDTH_ADD, "                    ");
@@ -74,9 +87,20 @@ void turn_on (int i) {
 	if (i == 1) mvaddstr(SCR_HEIGHT_ADD+7,CENTER(strlen("+ SCORE +")), "+ SCORE +");
 	if (i == 2) mvaddstr(SCR_HEIGHT_ADD+11,CENTER(strlen("+ EXIT +")), "+ EXIT +");
 }
-bool set_metronomy (int i) {
+void clean_menu_interface () {
+	int i;
+	clrline(SCREEN_BOTTOM - 1);
+	clrline(SCR_HEIGHT_ADD+15);
+	for(i = 0; i < 4; i++) {
+		mvaddch(SCR_HEIGHT_ADD+11+i, CENTER(8) + 8, ' ');
+		mvaddch(SCR_HEIGHT_ADD+11+i, CENTER(8) - 1, ' ');
+	}
+}
+
+// TEMPO
+bool set_metronomy (float i) {
 	static clock_t *timer;
-	static int espera;
+	static float espera;
 	
 	if (timer == NULL) {
 		if (espera <= 0) espera = ESPERA_INPUT; // 5 sec default
@@ -94,12 +118,10 @@ bool set_metronomy (int i) {
 	
 	return FALSE;
 }
-void Desligar_Espera () {					set_metronomy(0);	}
-void Valor_Espera (int i) {		if (i > 0) 	set_metronomy(i);	}
-bool Tempo_Espera () {			return 		set_metronomy(-1);	}
 
-/*INTERFACES EXTERNAS*/
+// INTERFACES EXTERNAS
 void Iniciar_Modulos() {
+	// NCURSES
 	initscr(); 				// initiate
 	cbreak(); 				// direct input, no ENTER
 	noecho(); 				// nonverbose
@@ -108,39 +130,35 @@ void Iniciar_Modulos() {
 	timeout(0000); 			// miliseconds, timeout outset
 	curs_set(0);			// invisible cursor
 	
+	// TIME
 	srand (time(NULL));
 }
 void Finalizar_Modulos() {
-	clrline(0);mvaddstr(SCREEN_HEIGHT/2,(SCREEN_WIDTH - strlen("BYE!"))/2, "BYE!");getch();
+	//MESSAGE
+	clrline(0);mvaddstr(SCR_HEIGHT_ADD+(20/2), CENTER(strlen(final_words)), final_words);
+	while( !(Tempo_Espera()) && (getch()) != KEY_SPACE) {}
+	
+	// NCURSES
 	endwin();				// end curses mode
-}
-void clean_interface () {
-	int i;
-	clrline(SCREEN_BOTTOM - 1);
-	clrline(17);
-	for(i = 0; i < 4; i++) {
-		mvaddch(13+i,(SCREEN_WIDTH - 8)/2 + 8, ' ');
-		mvaddch(13+i,(SCREEN_WIDTH - 8)/2 - 1, ' ');
-	}
+	
+	// MEMORY FREE
+	free(Chamar_Peca_Principal());
+	Desligar_Espera();
 }
 int Testar_Interface() {
-	char 	hello[]="+ TETRIS +",
-			name[]="Tiago Mergulhão",
-			email[]="me@tmergulhao.com",
-			line[]="_______________";
 	int ch, i;
 
 	if (SCREEN_HEIGHT < 22 || SCREEN_WIDTH < 22) return 0;
 	
 	set_frame();
 	
-	mvaddstr(SCR_HEIGHT_ADD + 1, CENTER(strlen(hello)),hello);
+	mvaddstr(SCR_HEIGHT_ADD + 1, CENTER(strlen(name)),name);
 	// mvprintw(SCR_HEIGHT_ADD + 2, CENTER(strlen("Width: ") + numlen(SCREEN_WIDTH)),"Width: %i", SCREEN_WIDTH); // %.3i
 	// mvprintw(SCR_HEIGHT_ADD + 3, CENTER(strlen("Height: ") + numlen(SCREEN_HEIGHT)),"Height: %i", SCREEN_HEIGHT);
 	
-	mvaddstr(SCR_HEIGHT_ADD + 3, CENTER(strlen(line)), line);
+	mvaddstr(SCR_HEIGHT_ADD + 3, CENTER(strlen("_______________")), "_______________");
 
-	mvaddstr(SCR_HEIGHT_ADD + 6, CENTER(strlen(name)), name);
+	mvaddstr(SCR_HEIGHT_ADD + 6, CENTER(strlen(dev_name)), dev_name);
 	mvaddstr(SCR_HEIGHT_ADD + 7, CENTER(strlen(email)), email);
 
 	mvaddstr(SCREEN_BOTTOM - 1, CENTER(strlen("USE ARROW KEYS")), "USE ARROW KEYS");
@@ -155,33 +173,34 @@ int Testar_Interface() {
 		
 		switch (ch) {
 			case KEY_UP:
+				clean_menu_interface();
+				mvaddstr(SCREEN_BOTTOM - 1,(SCREEN_WIDTH - strlen("UP"))/2, "UP");
+				
 				Apagar_Peca();
 				Rotacionar_Peca();
-				clean_interface();
-				mvaddstr(SCREEN_BOTTOM - 1,(SCREEN_WIDTH - strlen("UP"))/2, "UP");
 				Mostrar_Peca();
 				break;
 			case KEY_DOWN:
-				clean_interface();
-				mvaddstr(17,(SCREEN_WIDTH - 8)/2, "vvvvvvvv");
-				mvaddstr(SCREEN_BOTTOM - 1,(SCREEN_WIDTH - strlen("DOWN"))/2, "DOWN");
+				clean_menu_interface();
+				mvaddstr(SCR_HEIGHT_ADD+15,CENTER(8), "vvvvvvvv");
+				mvaddstr(SCREEN_BOTTOM - 1,CENTER(strlen("DOWN")), "DOWN");
 				break;
 			case KEY_LEFT:
-				clean_interface();
-				for(i = 0; i < 4; i++) mvaddch(13+i,(SCREEN_WIDTH - 8)/2 - 1, '<');
-				mvaddstr(SCREEN_BOTTOM - 1,(SCREEN_WIDTH - strlen("LEFT"))/2, "LEFT");
+				clean_menu_interface();
+				for(i = 0; i < 4; i++) mvaddch(SCR_HEIGHT_ADD+11+i,CENTER(8) - 1, '<');
+				mvaddstr(SCREEN_BOTTOM - 1,CENTER(strlen("LEFT")), "LEFT");
 				break;
 			case KEY_RIGHT:
-				clean_interface();
-				for(i = 0; i < 4; i++) mvaddch(13+i,(SCREEN_WIDTH - 8)/2 + 8, '>');
-				mvaddstr(SCREEN_BOTTOM - 1,(SCREEN_WIDTH - strlen("RIGHT"))/2, "RIGHT");
+				clean_menu_interface();
+				for(i = 0; i < 4; i++) mvaddch(SCR_HEIGHT_ADD+11+i,CENTER(8) + 8, '>');
+				mvaddstr(SCREEN_BOTTOM - 1,CENTER(strlen("RIGHT")), "RIGHT");
 				break;
 			default:
 				if(i) {
+					clean_menu_interface();
 					mvaddstr(SCREEN_BOTTOM - 1,CENTER(strlen("SCAPE WITH SPACE")), "SCAPE WITH SPACE");
-					clean_interface();
+					
 					Apagar_Peca();
-					// for (i = 0; i < 4; i++) clrline(13+i);
 					Iniciar_Peca(rand()%7);
 					Centralizar_Peca();
 					Mostrar_Peca();
@@ -189,12 +208,8 @@ int Testar_Interface() {
 		}
 		refresh();
 	}
-	Desligar_Espera();
-	free(Chamar_Peca());
 	
 	return 1;
-
-	// Create a WDSA-Q fallback
 }
 int Capturar_Opcao() {
 	int ch, i = 0;
@@ -227,7 +242,15 @@ int Capturar_Opcao() {
 	return 0;
 }
 void Jogar() {
-	
+	static long score;
+	int ch;
+	clear();
+	set_frame();
+	while ((ch = getch()) != KEY_SPACE) {
+		mvprintw(SCREEN_BOTTOM+1, CENTER(18),"%.18i", score); refresh();
+		score++;
+	}
+	mvaddstr(SCR_HEIGHT_ADD-1, CENTER(strlen("PAUSED")),"PAUSED"); refresh();
 }
 void Mostrar_Score() {
 	

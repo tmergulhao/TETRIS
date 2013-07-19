@@ -7,8 +7,8 @@ int main (int argc, char *argv[]) {
 	
 	if ((i = Testar_Interface())) {
 		while ((i = Capturar_Opcao()) != 2) {
-			if (i == 0) Mostrar_Score();
-			if (i == 1) Jogar();
+			if (i == 0) Jogar();
+			if (i == 1) Mostrar_Score();
 		}
 	}
 	

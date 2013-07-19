@@ -3,13 +3,17 @@ SOURCES = ${OBJECTS,  .o=.c}
 HEADERS = ${OBJECTS,  .o=.h}
 SELF = ${@, .o=.c} ${@, .o=.h}
 
-all: compile
-	./compiled.out
-	read null
-	rm *.o *.out
+all: compile run clean
 
 compile: main.o ${OBJECTS}
 	gcc $? -lncurses -o compiled.out
+
+run:
+	./compiled.out
+	read null
+
+clean:
+	rm *.o *.out
 
 main.o: main.c ${SOURCES} ${HEADERS}
 	gcc -c main.c
