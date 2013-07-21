@@ -1,4 +1,4 @@
-OBJECTS = engine.o peca.o
+OBJECTS = engine.o peca.o metronomo.o
 SOURCES = ${OBJECTS,  .o=.c}
 HEADERS = ${OBJECTS,  .o=.h}
 SELF = ${@, .o=.c} ${@, .o=.h}
@@ -18,8 +18,12 @@ clean:
 main.o: main.c ${SOURCES} ${HEADERS}
 	gcc -c main.c
 
-engine.o: ${SELF} peca.c peca.h
+engine.o: ${SOURCES} ${HEADERS}
 	gcc -c engine.c
 
 peca.o: ${SELF}
 	gcc -c peca.c
+
+metronomo.o: ${SELF}
+	gcc -c metronomo.c
+

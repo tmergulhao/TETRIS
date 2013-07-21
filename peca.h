@@ -15,7 +15,7 @@ typedef struct {
 	BLOCO_TIPO BLOCO[4];
 } PECA;
 
-// Interface para MAIN.C
+// Interface para ENGINE.C
 EXT_MOD_PECA PECA* Chamar_Peca_Principal();
 EXT_MOD_PECA void Rotacionar_Peca();
 EXT_MOD_PECA void Iniciar_Peca();

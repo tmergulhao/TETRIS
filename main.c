@@ -6,7 +6,7 @@ int main (int argc, char *argv[]) {
 	Iniciar_Modulos();
 	
 	if ((i = Testar_Interface())) {
-		while ((i = Capturar_Opcao()) != 2) {
+		while ((i = Capturar_Opcao()) != 3) {
 			if (i == 0) Jogar();
 			if (i == 1) Mostrar_Score();
 		}

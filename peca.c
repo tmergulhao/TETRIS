@@ -27,14 +27,14 @@ void Iniciar_Peca (int i) {
 			break;
 		case 1:
 			BLOCO[0].X = -1;
-			BLOCO[1].X = -1;		BLOCO[1].Y = -1;
+			BLOCO[1].X = -1;	BLOCO[1].Y = -1;
 			BLOCO[2].X = 0;		BLOCO[2].Y = -1;
 			BLOCO[3].X = 0;		BLOCO[3].Y = -2;
 			break;
 		case 2:
 			BLOCO[0].X = -1;
-			BLOCO[1].X = -1;		BLOCO[1].Y = -1;
-			BLOCO[2].X = -1;		BLOCO[2].Y = -2;
+			BLOCO[1].X = -1;	BLOCO[1].Y = -1;
+			BLOCO[2].X = -1;	BLOCO[2].Y = -2;
 			BLOCO[3].X = 0;		BLOCO[3].Y = -2;
 			break;
 		case 3:

@@ -6,6 +6,7 @@
 
 #include "engine.h"
 #include "peca.h"
+#include "metronomo.h"
 // #include "tela.h"
 
 #define KEY_SPACE			32
@@ -17,7 +18,6 @@
 #define CANVAS_WIDTH		20
 #define CENTER(X)			SCR_WIDTH_ADD + (CANVAS_WIDTH - (X))/2
 #define SCREEN_BOTTOM		SCR_HEIGHT_ADD + 19
-#define ESPERA_INPUT 		5 // seconds
 
 #define name				"+ TETRIS +"
 #define email				"me@tmergulhao.com"
@@ -26,10 +26,6 @@
 #define final_words			"BYE!"
 
 #define clrline_a()			clrline(0)
-
-#define Desligar_Espera() 	set_metronomy(0)
-#define Valor_Espera(X) 	set_metronomy(X)
-#define Tempo_Espera() 		set_metronomy(-1)
 
 #define Mostrar_Peca()		display_piece(1)
 #define Apagar_Peca()		display_piece(0)
@@ -60,7 +56,6 @@ void display_piece (int ON) {
 	for (i = 0; i < 4; i++)	if (ON) 	mvaddstr((SCR_HEIGHT_ADD + PECA_ATUAL->Y + BLOCO[i].Y), (SCR_WIDTH_ADD + (PECA_ATUAL->X + BLOCO[i].X)*2), 	"[]");
 							else 		mvaddstr((SCR_HEIGHT_ADD + PECA_ATUAL->Y + BLOCO[i].Y), (SCR_WIDTH_ADD + (PECA_ATUAL->X + BLOCO[i].X)*2), 	"  ");
 }
-
 void clrline (int i) {
 	if (i) mvaddstr(i, SCR_WIDTH_ADD, "                    ");
 	else for (i = 0; i<20; i++) clrline (SCR_HEIGHT_ADD + i); // CLEARS ALL GAME LINES 20*20
@@ -78,14 +73,20 @@ void set_frame () {
 	refresh();
 }
 void turn_off (int i) {
-	if (i == 0) mvaddstr(SCR_HEIGHT_ADD+3,CENTER(strlen("  PLAY  ")), "  PLAY  ");
-	if (i == 1) mvaddstr(SCR_HEIGHT_ADD+7,CENTER(strlen("  SCORE  ")), "  SCORE  ");
-	if (i == 2) mvaddstr(SCR_HEIGHT_ADD+11,CENTER(strlen("  EXIT  ")), "  EXIT  ");
+	int j = SCR_HEIGHT_ADD + 3 + i*4;
+	clrline(j);
+	if (i == 0) mvaddstr(j,CENTER(strlen("PLAY")), "PLAY");
+	if (i == 1) mvaddstr(j,CENTER(strlen("SCORE")), "SCORE");
+	if (i == 2) mvaddstr(j,CENTER(strlen("TIMEOUT")), "TIMEOUT");
+	if (i == 3) mvaddstr(j,CENTER(strlen("EXIT")), "EXIT");
 }
 void turn_on (int i) {
-	if (i == 0) mvaddstr(SCR_HEIGHT_ADD+3,CENTER(strlen("+ PLAY +")), "+ PLAY +");
-	if (i == 1) mvaddstr(SCR_HEIGHT_ADD+7,CENTER(strlen("+ SCORE +")), "+ SCORE +");
-	if (i == 2) mvaddstr(SCR_HEIGHT_ADD+11,CENTER(strlen("+ EXIT +")), "+ EXIT +");
+	int j = SCR_HEIGHT_ADD + 3 + i*4;
+	clrline(j);
+	if (i == 0) mvaddstr(j,CENTER(strlen("+ PLAY +")), "+ PLAY +");
+	if (i == 1) mvaddstr(j,CENTER(strlen("+ SCORE +")), "+ SCORE +");
+	if (i == 2) mvprintw(j,CENTER(1 + strlen("+  SECONDS +")), "- %.0f SECONDS +", Ver_T_Jogo());
+	if (i == 3) mvaddstr(j,CENTER(strlen("+ EXIT +")), "+ EXIT +");
 }
 void clean_menu_interface () {
 	int i;
@@ -97,29 +98,8 @@ void clean_menu_interface () {
 	}
 }
 
-// TEMPO
-bool set_metronomy (float i) {
-	static clock_t *timer;
-	static float espera;
-	
-	if (timer == NULL) {
-		if (espera <= 0) espera = ESPERA_INPUT; // 5 sec default
-		
-		timer = (clock_t*)malloc(sizeof(clock_t));
-		*timer = clock() +  CLOCKS_PER_SEC * espera;
-	}
-	if (i < 0 && *timer < clock()) {
-		if (espera <= 0) espera = ESPERA_INPUT; // 5 sec default
-		
-		*timer = clock() +  CLOCKS_PER_SEC * espera;
-		return TRUE;
-	} else if (i > 0) espera = i;
-	else if (i == 0) free(timer);
-	
-	return FALSE;
-}
-
 // INTERFACES EXTERNAS
+
 void Iniciar_Modulos() {
 	// NCURSES
 	initscr(); 				// initiate
@@ -138,12 +118,12 @@ void Finalizar_Modulos() {
 	clrline(0);mvaddstr(SCR_HEIGHT_ADD+(20/2), CENTER(strlen(final_words)), final_words);
 	while( !(Tempo_Espera()) && (getch()) != KEY_SPACE) {}
 	
-	// NCURSES
-	endwin();				// end curses mode
-	
 	// MEMORY FREE
 	free(Chamar_Peca_Principal());
 	Desligar_Espera();
+	
+	// NCURSES
+	endwin();				// end curses mode
 }
 int Testar_Interface() {
 	int ch, i;
@@ -206,6 +186,8 @@ int Testar_Interface() {
 					Mostrar_Peca();
 				}
 		}
+		
+		
 		refresh();
 	}
 	
@@ -215,7 +197,7 @@ int Capturar_Opcao() {
 	int ch, i = 0;
 
 	clrline(0);
-	for (i = 3; i; i--) turn_off(i-1);
+	for (i = 4; i; i--) turn_off(i-1);
 	turn_on(i);
 	refresh();
 
@@ -223,34 +205,49 @@ int Capturar_Opcao() {
 		switch (ch) {
 			case KEY_UP:
 				turn_off(i);
-				i = (i == 0) ? 2 : (i-1)%3;
+				i = (i == 0) ? 3 : (i-1)%4;
+				turn_on(i);
 				break;
 			case KEY_DOWN:
 				turn_off(i);
-				i = (i+1)%3;
+				i = (i+1)%4;
+				turn_on(i);
 				break;
 			case KEY_SPACE:
 				return i;
 				break;
+			case KEY_LEFT:
+				if (i == 2) Mudar_Tempo_Jogo(-1);
+				turn_on(i);
+				break;
+			case KEY_RIGHT:
+				if (i == 2) Mudar_Tempo_Jogo(+1);
+				turn_on(i);
+				break;
 			default:
 				if (Tempo_Espera()) mvaddstr(SCREEN_BOTTOM - 1,CENTER(strlen("SELECT WITH SPACE")), "SELECT WITH SPACE");
 		}
-		turn_on(i);
 		refresh();
 	}
 	Desligar_Espera();
 	return 0;
 }
-void Jogar() {
+long Jogar() {
 	static long score;
+	long returner;
 	int ch;
+	
 	clear();
 	set_frame();
+	
 	while ((ch = getch()) != KEY_SPACE) {
+		if (ch == KEY_DOWN || Tempo_Jogo()) score+=8;
 		mvprintw(SCREEN_BOTTOM+1, CENTER(18),"%.18i", score); refresh();
-		score++;
 	}
+	
 	mvaddstr(SCR_HEIGHT_ADD-1, CENTER(strlen("PAUSED")),"PAUSED"); refresh();
+	
+	return -1;
 }
 void Mostrar_Score() {
 	
