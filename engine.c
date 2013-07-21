@@ -19,6 +19,8 @@
 #define CENTER(X)			SCR_WIDTH_ADD + (CANVAS_WIDTH - (X))/2
 #define SCREEN_BOTTOM		SCR_HEIGHT_ADD + 19
 
+#define BETWEEN(X,DOWN,UP)	((X) >= (DOWN) && (X) <= (UP))
+
 #define name				"+ TETRIS +"
 #define email				"me@tmergulhao.com"
 #define dev_name			"Tiago Mergulhão"
@@ -29,6 +31,8 @@
 
 #define Mostrar_Peca()		display_piece(1)
 #define Apagar_Peca()		display_piece(0)
+#define BLOC_LOCATION_X(Y)	PECA_ATUAL->X + BLOCO[Y].X
+#define BLOC_LOCATION_Y(X)	PECA_ATUAL->Y + BLOCO[X].Y
 
 int sizeWidth() {
 	static int width;
@@ -47,14 +51,20 @@ void Centralizar_Peca () {
 	PECA_ATUAL->Y = 14;
 	PECA_ATUAL->X = 5;
 }
+void Mover_Peca (int i) {
+	PECA* PECA_ATUAL = Chamar_Peca_Principal();
+	PECA_ATUAL->X += i;
+}
 void display_piece (int ON) {
 	PECA* PECA_ATUAL = Chamar_Peca_Principal();
 	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
 	
 	int i;
 	
-	for (i = 0; i < 4; i++)	if (ON) 	mvaddstr((SCR_HEIGHT_ADD + PECA_ATUAL->Y + BLOCO[i].Y), (SCR_WIDTH_ADD + (PECA_ATUAL->X + BLOCO[i].X)*2), 	"[]");
-							else 		mvaddstr((SCR_HEIGHT_ADD + PECA_ATUAL->Y + BLOCO[i].Y), (SCR_WIDTH_ADD + (PECA_ATUAL->X + BLOCO[i].X)*2), 	"  ");
+	for (i = 0; i < 4; i++) if (BETWEEN((BLOC_LOCATION_Y(i)),0,20) && BETWEEN((BLOC_LOCATION_X(i)),0,9)) {
+		if (ON) mvaddstr((SCR_HEIGHT_ADD + PECA_ATUAL->Y + BLOCO[i].Y), (SCR_WIDTH_ADD + (PECA_ATUAL->X + BLOCO[i].X)*2), 	"[]");
+		else mvaddstr((SCR_HEIGHT_ADD + PECA_ATUAL->Y + BLOCO[i].Y), (SCR_WIDTH_ADD + (PECA_ATUAL->X + BLOCO[i].X)*2), 	"  ");
+	}
 }
 void clrline (int i) {
 	if (i) mvaddstr(i, SCR_WIDTH_ADD, "                    ");
@@ -234,15 +244,59 @@ int Capturar_Opcao() {
 }
 long Jogar() {
 	static long score;
-	long returner;
 	int ch;
 	
 	clear();
 	set_frame();
 	
+	if (!score) Iniciar_Peca(rand()%7);
+	
+	Centralizar_Peca(); // DELETE
+	
+	Mostrar_Peca();
+	
 	while ((ch = getch()) != KEY_SPACE) {
-		if (ch == KEY_DOWN || Tempo_Jogo()) score+=8;
-		mvprintw(SCREEN_BOTTOM+1, CENTER(18),"%.18i", score); refresh();
+		// Mostrar_Tabuleiro();
+		
+		switch (ch) {
+			case KEY_UP:
+				Apagar_Peca();
+				Rotacionar_Peca();
+				Mostrar_Peca();
+				// CONTROLE DE AÇÃO
+				break;
+			case KEY_LEFT:
+				Apagar_Peca();
+				Mover_Peca(-1);
+				Mostrar_Peca();
+				// CONTROLE DE AÇÃO
+				break;
+			case KEY_RIGHT:
+				Apagar_Peca();
+				Mover_Peca(+1);
+				Mostrar_Peca();
+				// CONTROLE DE AÇÃO
+				break;
+				/*
+			case KEY_DOWN:
+				if ((returner = Descer_Peca()) == 0) {
+					if (Fixar_Peca()) {
+						score++;
+						Iniciar_Peca(rand()%7);
+					}
+				} else if (returner == 1) {
+					Limpar_Tabuleiro();
+					
+					returner = score;
+					score = 0;
+					return returner;
+				}
+				
+				break;
+				*/
+		}
+		
+		mvprintw(SCREEN_BOTTOM+1, CENTER(18),"%.18i", 8*score); refresh();
 	}
 	
 	mvaddstr(SCR_HEIGHT_ADD-1, CENTER(strlen("PAUSED")),"PAUSED"); refresh();
