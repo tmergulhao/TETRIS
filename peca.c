@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "peca.h"
+#include "engine.h"
 
 PECA* Chamar_Peca_Principal () {
 	static PECA* PECA_ATUAL;
@@ -15,7 +16,9 @@ void Iniciar_Peca (int i) {
 	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
 	
 	PECA_ATUAL->Y = -1;
-	PECA_ATUAL->X = 11;
+	PECA_ATUAL->X = (CANVAS_WIDTH)/2;
+	
+	PECA_ATUAL = Chamar_Peca_Principal();
 	
 			BLOCO[0].X = 0;		BLOCO[0].Y = 0;
 	
