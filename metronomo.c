@@ -33,8 +33,10 @@ float metronomy (float mode, int which) {
 		timer_use->timer = clock() +  CLOCKS_PER_SEC * timer_use->espera;
 		
 		return 1;
-	} else 	if (mode == -2) 	return timer_use->espera;
-	else 	if (mode > 0) 		return timer_use->espera = mode;
+	}
+	else 	if (mode == -3) 	timer_use->timer = clock() +  CLOCKS_PER_SEC * timer_use->espera; // FALSEFIRE
+	else 	if (mode == -2) 	return timer_use->espera; // VIEW
+	else 	if (mode > 0) 		return timer_use->espera = mode; // SET
 	
 	if (!mode) while (timer) {
 		timer_use = timer;
