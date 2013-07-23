@@ -203,6 +203,11 @@ void Iniciar_Modulos() {
 	timeout(0000); 			// miliseconds, timeout outset
 	curs_set(0);			// invisible cursor
 	
+	// PHOSPHORUS TERMINAL GREEN
+	init_pair(1, COLOR_GREEN, COLOR_BLACK);
+	init_color(COLOR_GREEN, 0, 1000, 0);
+	attron(COLOR_PAIR(1));
+
 	// TIME
 	srand (time(NULL));
 }
