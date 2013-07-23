@@ -17,8 +17,13 @@ struct TIPO_LINHA {
 };
 typedef struct TIPO_LINHA LINHA;
 
+struct TIPO_TABULEIRO {
+	struct TIPO_LINHA* ENTER;
+};
+typedef struct TIPO_TABULEIRO TABULEIRO;
+
 EXT_MOD_TABULEIRO void Liberar_Tabuleiro ();
-EXT_MOD_TABULEIRO LINHA* Chamar_Tabuleiro ();
+EXT_MOD_TABULEIRO TABULEIRO* Chamar_Tabuleiro ();
 
 EXT_MOD_TABULEIRO bool Acessar_Bloco (int y, int x, bool mode);
 EXT_MOD_TABULEIRO bool Reciclar_Linha (int y);

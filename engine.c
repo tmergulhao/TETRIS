@@ -38,6 +38,10 @@
 #define BLOC_LOCATION_X(Y)	PECA_ATUAL->X + BLOCO[Y].X
 #define BLOC_LOCATION_Y(X)	PECA_ATUAL->Y + BLOCO[X].Y
 
+#define Inver_Bloco(Y,X)	Acessar_Bloco(Y,X,1)
+#define Valor_Bloco(Y,X)	Acessar_Bloco(Y,X,0)
+#define Reciclar_Tabul()	Reciclar_Linha(-1)
+
 int sizeWidth() {
 	static int width;
 	int row;
@@ -50,15 +54,7 @@ int sizeHeight() {
 	if (!height) getmaxyx(stdscr,height,col); // just in case you wonder: it's a MACRO
 	return height;
 }
-void Centralizar_Peca () {
-	PECA* PECA_ATUAL = Chamar_Peca_Principal();
-	PECA_ATUAL->Y = 14;
-	PECA_ATUAL->X = 5;
-}
-void Mover_Peca (int i) {
-	PECA* PECA_ATUAL = Chamar_Peca_Principal();
-	PECA_ATUAL->X += i;
-}
+
 void display_piece (int ON) {
 	PECA* PECA_ATUAL = Chamar_Peca_Principal();
 	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
@@ -112,6 +108,89 @@ void clean_menu_interface () {
 	}
 }
 
+// SUB INTERFACES
+
+void Mostrar_Tabuleiro () {
+	TABULEIRO* TABULEIRO_PRINCIPAL = Chamar_Tabuleiro();
+	LINHA *LINHA_ATUAL = TABULEIRO_PRINCIPAL->ENTER;
+	
+	int i, j;
+	
+	for (i = 0; i < CANVAS_HEIGHT; i++) {
+		for (j = 0; j < CANVAS_WIDTH; j++) {
+			if (LINHA_ATUAL->VALOR[j]) 	mvaddstr((SCR_HEIGHT_ADD + i), (SCR_WIDTH_ADD + j*2), 	"[]");
+			else						mvaddstr((SCR_HEIGHT_ADD + i), (SCR_WIDTH_ADD + j*2), 	"  ");
+		}
+		LINHA_ATUAL = LINHA_ATUAL->NEXT;
+	}
+}
+void Centralizar_Peca () {
+	PECA* PECA_ATUAL = Chamar_Peca_Principal();
+	PECA_ATUAL->Y = 14;
+	PECA_ATUAL->X = 5;
+}
+long Score(long i) {
+	static long score;
+	if (i < 0) {
+		score = 0;
+		// ADD SCORE TO BOARD
+	}
+	else score += i*60/(Ver_T_Jogo());
+
+	return score;
+}
+void Mover_Peca (int i) {
+	PECA* PECA_ATUAL = Chamar_Peca_Principal();
+	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
+	bool ALERT_INTERSECTION = false;
+	
+	int j;
+	
+	for (j = 0; j < 4; j++) {
+		if ((	Valor_Bloco(BLOC_LOCATION_Y(j) , BLOC_LOCATION_X(j) + i))
+			||	!(BETWEEN((BLOC_LOCATION_X(j)) + i, 0, CANVAS_WIDTH-1)	)) ALERT_INTERSECTION = true;
+	}
+	
+	if (ALERT_INTERSECTION == false) PECA_ATUAL->X += i;
+}
+int Descer_Peca () {
+	PECA* PECA_ATUAL = Chamar_Peca_Principal();
+	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
+	
+	int i, LINES_WRAPPED = 0, min_y = 1;
+	
+	bool ALERT_INTERSECTION = false, ALERT_OVER = false, CHECK_LINES[4];
+	
+	if (PECA_ATUAL->Y < 19) { 
+		for (i = 0; i < 4; i++) {
+			if (Valor_Bloco(BLOC_LOCATION_Y(i)+1 , BLOC_LOCATION_X(i))) ALERT_INTERSECTION = true;
+			if (BLOC_LOCATION_Y(i) < 0) ALERT_OVER = true;
+		}
+		if (ALERT_INTERSECTION) {
+			if (ALERT_OVER) return -1;
+		} else {
+			PECA_ATUAL->Y++;
+			Passar_Ciclo();
+			
+			return 0;
+		}
+	}
+	
+	for (i = 0; i < 4; i++) {
+		Inver_Bloco(BLOC_LOCATION_Y(i) , BLOC_LOCATION_X(i));
+		
+		CHECK_LINES[BLOCO[i].Y + 3] = true;
+	}
+	
+	for (i = 0; i < 4; i++) if(CHECK_LINES[i])
+		LINES_WRAPPED = (Reciclar_Linha(PECA_ATUAL->Y + i - 3)) ? LINES_WRAPPED+1 : LINES_WRAPPED;
+	
+	Iniciar_Peca(rand()%7);
+	Passar_Ciclo();
+	
+	return LINES_WRAPPED;
+}
+
 // INTERFACES EXTERNAS
 
 void Iniciar_Modulos() {
@@ -140,12 +219,120 @@ void Finalizar_Modulos() {
 	// NCURSES
 	endwin();				// end curses mode
 }
-int Testar_Interface() {
-	int ch, i;
+int Capturar_Opcao() {
+	int ch, i = 0;
 
+	clrline(0);
+	for (i = 4; i; i--) turn_off(i-1);
+	turn_on(i);
+	refresh();
+
+	while ((ch = getch())) {
+		switch (ch) {
+			case KEY_UP:
+				turn_off(i);
+				i = (i == 0) ? 3 : (i-1)%4;
+				turn_on(i);
+				break;
+			case KEY_DOWN:
+				turn_off(i);
+				i = (i+1)%4;
+				turn_on(i);
+				break;
+			case KEY_SPACE:
+				return i;
+				break;
+			case KEY_LEFT:
+				if (i == 2) Mudar_Tempo_Jogo(-1);
+				turn_on(i);
+				break;
+			case KEY_RIGHT:
+				if (i == 2) Mudar_Tempo_Jogo(+1);
+				turn_on(i);
+				break;
+			default:
+				if (Tempo_Espera()) mvaddstr(SCREEN_BOTTOM - 1,CENTER(strlen("SELECT WITH SPACE")), "SELECT WITH SPACE");
+		}
+		refresh();
+	}
+	Desligar_Espera();
+	return 0;
+}
+void Jogar() {
+	int ch;
+	static int end;
+	
+	clear();
+	set_frame();
+	
+	if (Score(0) == 0 || end == -1) {
+		Iniciar_Peca(rand()%7);
+		Reciclar_Tabul();
+		end = 0;
+	}
+	
+	Mostrar_Tabuleiro();
+	Mostrar_Peca();
+	
+	while ( (end != -1) && (ch = getch()) != KEY_SPACE) {
+		switch (ch) {
+			case KEY_UP:
+				Apagar_Peca();
+				Rotacionar_Peca();
+				Mostrar_Peca();
+				break;
+			case KEY_LEFT:
+				Apagar_Peca();
+				Mover_Peca(-1);
+				Mostrar_Peca();
+				break;
+			case KEY_RIGHT:
+				Apagar_Peca();
+				Mover_Peca(+1);
+				Mostrar_Peca();
+				break;
+			
+			case KEY_DOWN:
+				Apagar_Peca();
+				if ((end = Descer_Peca()) != -1 && end >= 0) Score(end);
+				Mostrar_Tabuleiro();
+				Mostrar_Peca();
+				break;
+			default:
+				Apagar_Peca();
+				if (Tempo_Jogo()) if ((end = Descer_Peca()) != -1 && end >= 0) Score(end);
+				Mostrar_Tabuleiro();
+				Mostrar_Peca();
+				break;
+		}
+		mvprintw(SCREEN_BOTTOM+1, CENTER(18),"%.18i", Score(0)); refresh();
+	}
+	
+	if (end == -1) {
+		mvaddstr(SCR_HEIGHT_ADD-1, CENTER(strlen("GAME OVER")),"GAME OVER");
+		Score(-1);
+	}
+	else mvaddstr(SCR_HEIGHT_ADD-1, CENTER(strlen("PAUSED")),"PAUSED");
+	
+	refresh();
+}
+int Testar_Interface() {
+	int ch, i, j;
+	
 	if (SCREEN_HEIGHT < 22 || SCREEN_WIDTH < 22) return 0;
 	
 	set_frame();
+	
+	for (i = 0; i < CANVAS_HEIGHT; i++) for (j = 0; j < CANVAS_WIDTH; j++) Inver_Bloco(i,j);
+	Mostrar_Tabuleiro();refresh();
+
+	metronomy(0.1,0);
+	for (i = 0; i < CANVAS_HEIGHT+1; i++) {
+		Mostrar_Tabuleiro();refresh();
+		Reciclar_Linha(19);
+		while( !(Tempo_Espera()) && (getch()) != KEY_SPACE) {}
+	}
+	metronomy(3,0);
 	
 	mvaddstr(SCR_HEIGHT_ADD + 1, CENTER(strlen(name)),name);
 	// mvprintw(SCR_HEIGHT_ADD + 2, CENTER(strlen("Width: ") + numlen(SCREEN_WIDTH)),"Width: %i", SCREEN_WIDTH); // %.3i
@@ -207,185 +394,6 @@ int Testar_Interface() {
 	}
 	
 	return 1;
-}
-int Capturar_Opcao() {
-	int ch, i = 0;
-
-	clrline(0);
-	for (i = 4; i; i--) turn_off(i-1);
-	turn_on(i);
-	refresh();
-
-	while ((ch = getch())) {
-		switch (ch) {
-			case KEY_UP:
-				turn_off(i);
-				i = (i == 0) ? 3 : (i-1)%4;
-				turn_on(i);
-				break;
-			case KEY_DOWN:
-				turn_off(i);
-				i = (i+1)%4;
-				turn_on(i);
-				break;
-			case KEY_SPACE:
-				return i;
-				break;
-			case KEY_LEFT:
-				if (i == 2) Mudar_Tempo_Jogo(-1);
-				turn_on(i);
-				break;
-			case KEY_RIGHT:
-				if (i == 2) Mudar_Tempo_Jogo(+1);
-				turn_on(i);
-				break;
-			default:
-				if (Tempo_Espera()) mvaddstr(SCREEN_BOTTOM - 1,CENTER(strlen("SELECT WITH SPACE")), "SELECT WITH SPACE");
-		}
-		refresh();
-	}
-	Desligar_Espera();
-	return 0;
-}
-
-void Mostrar_Tabuleiro () {
-	LINHA *LINHA_ATUAL = Chamar_Tabuleiro();
-	
-	int i, j;
-	
-	for (i = 0; i < CANVAS_HEIGHT; i++) {
-		for (j = 0; j < CANVAS_WIDTH; j++) {
-			if (LINHA_ATUAL->VALOR[j]) 	mvaddstr((SCR_HEIGHT_ADD + i), (SCR_WIDTH_ADD + j*2), 	"[]");
-			else						mvaddstr((SCR_HEIGHT_ADD + i), (SCR_WIDTH_ADD + j*2), 	"  ");
-		}
-		LINHA_ATUAL = LINHA_ATUAL->NEXT;
-	}
-}
-
-#define Inver_Bloco(Y,X)	Acessar_Bloco(Y,X,1)
-#define Valor_Bloco(Y,X)	Acessar_Bloco(Y,X,0)
-#define Reciclar_Tabul()	Reciclar_Linha(-1)
-
-bool Verificar_Colisao (int i) {
-	PECA* PECA_ATUAL = Chamar_Peca_Principal();
-	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
-	
-	bool ALERT_INTERSECTION = false;
-	
-	if (i) for (i = 0; i < 4; i++) {
-		if (Valor_Bloco(BLOC_LOCATION_Y(i) , BLOC_LOCATION_X(i) + i)) ALERT_INTERSECTION = true;
-	}
-	
-	else {}
-	
-	return ALERT_INTERSECTION;
-}
-
-int Descer_Peca () {
-	PECA* PECA_ATUAL = Chamar_Peca_Principal();
-	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
-	
-	int i, LINES_WRAPPED = 0, min_y = 1;
-	
-	bool ALERT_INTERSECTION = false, ALERT_OVER = false, CHECK_LINES[4];
-	
-	if (PECA_ATUAL->Y < 19) { 
-		for (i = 0; i < 4; i++) {
-			if (Valor_Bloco(BLOC_LOCATION_Y(i)+1 , BLOC_LOCATION_X(i))) ALERT_INTERSECTION = true;
-			if (BLOC_LOCATION_Y(i) < 0) ALERT_OVER = true;
-		}
-		if (ALERT_INTERSECTION) {
-			if (ALERT_OVER) return -1;
-		} else {
-			PECA_ATUAL->Y++;
-			Passar_Ciclo();
-			
-			return 0;
-		}
-	}
-	
-	for (i = 0; i < 4; i++) {
-		Inver_Bloco(BLOC_LOCATION_Y(i) , BLOC_LOCATION_X(i));
-		
-		CHECK_LINES[BLOCO[i].Y + 3] = true;
-	}
-	
-	for (i = 0; i < 4; i++) if(CHECK_LINES[i])
-		LINES_WRAPPED = (Reciclar_Linha(PECA_ATUAL->Y + i - 3)) ? LINES_WRAPPED+1 : LINES_WRAPPED;
-	
-	Iniciar_Peca(rand()%7);
-	Passar_Ciclo();
-	
-	return LINES_WRAPPED + 1;
-}
-
-void Jogar() {
-	static long score;
-	int ch;
-	static int end;
-	
-	clear();
-	set_frame();
-	
-	if (!score || end == -1) {
-		Iniciar_Peca(rand()%7);
-		Reciclar_Tabul();
-		score = 0;
-		end = 0;
-	}
-	
-	Mostrar_Tabuleiro();
-	Mostrar_Peca();
-	
-	while ( (end != -1) && (ch = getch()) != KEY_SPACE) {
-		switch (ch) {
-			case KEY_UP:
-				Apagar_Peca();
-				Rotacionar_Peca();
-				Mostrar_Peca();
-				// CONTROLE DE AÇÃO
-				break;
-			case KEY_LEFT:
-				Apagar_Peca();
-				if (Verificar_Colisao(-1) == 0) Mover_Peca(-1);
-				Mostrar_Peca();
-				// CONTROLE DE AÇÃO
-				break;
-			case KEY_RIGHT:
-				Apagar_Peca();
-				if (Verificar_Colisao(+1) == 0) Mover_Peca(+1);
-				Mostrar_Peca();
-				// CONTROLE DE AÇÃO
-				break;
-			
-			case KEY_DOWN:
-				Apagar_Peca();
-				
-				if ((end = Descer_Peca()) != -1 && end > 0) score += 60*(end-1)/(Ver_T_Jogo());
-				
-				Mostrar_Tabuleiro();
-				Mostrar_Peca();
-				break;
-			default:
-				Apagar_Peca();
-				
-				if (Tempo_Jogo()) if ((end = Descer_Peca()) != -1 && end > 0) score += 60*(end-1)/(Ver_T_Jogo());
-				
-				Mostrar_Tabuleiro();
-				Mostrar_Peca();
-				break;
-		}
-		
-		mvprintw(SCREEN_BOTTOM+1, CENTER(18),"%.18i", 8*score); refresh();
-	}
-	
-	if (end == -1) {
-		mvaddstr(SCR_HEIGHT_ADD-1, CENTER(strlen("GAME OVER")),"GAME OVER");
-		// ADD SCORE
-	}
-	else mvaddstr(SCR_HEIGHT_ADD-1, CENTER(strlen("PAUSED")),"PAUSED");
-	
-	refresh();
 }
 void Mostrar_Score() {
 	
