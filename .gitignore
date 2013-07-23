@@ -21,3 +21,8 @@
 
 # Windows
 thumbs.db
+
+#GCOV
+*.gcov
+*.gcda
+*.gcno
