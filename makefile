@@ -6,6 +6,8 @@ GCOVFLAGS = -fprofile-arcs -ftest-coverage
 
 all: compile run clean
 
+test: cover assert clean
+
 compile: main.o ${OBJECTS}
 	gcc $? -lncurses ${GCOV} -o compiled.out
 
@@ -17,6 +19,10 @@ cover: main.o ${OBJECTS}
 	gcc $? -lncurses ${GCOVFLAGS} -o compiled.out
 	./compiled.out
 	gcov *.c
+
+assert: test.main.o ${OBJECTS}
+	gcc $? -lcunit -lncurses -o test.compiled.out
+	./test.compiled.out
 
 clean:
 	rm *.o *.out *.gcov *.gcda *.gcno
@@ -35,3 +41,6 @@ tabuleiro.o: ${SELF} engine.h
 
 metronomo.o: ${SELF}
 	gcc -c ${GCOVFLAGS} metronomo.c
+
+test.main.o: ${SELF} ${SOURCES} ${HEADERS}
+	gcc -c test.main.c

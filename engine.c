@@ -340,8 +340,6 @@ int Testar_Interface() {
 	metronomy(3,0);
 	
 	mvaddstr(SCR_HEIGHT_ADD + 1, CENTER(strlen(name)),name);
-	// mvprintw(SCR_HEIGHT_ADD + 2, CENTER(strlen("Width: ") + numlen(SCREEN_WIDTH)),"Width: %i", SCREEN_WIDTH); // %.3i
-	// mvprintw(SCR_HEIGHT_ADD + 3, CENTER(strlen("Height: ") + numlen(SCREEN_HEIGHT)),"Height: %i", SCREEN_HEIGHT);
 	
 	mvaddstr(SCR_HEIGHT_ADD + 3, CENTER(strlen("_______________")), "_______________");
 
