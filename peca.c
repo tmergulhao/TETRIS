@@ -11,6 +11,10 @@ PECA* Chamar_Peca_Principal () {
 	return PECA_ATUAL;
 }
 
+void Liberar_Peca () {
+	free(Chamar_Peca_Principal());
+}
+
 void Iniciar_Peca (int i) {
 	PECA* PECA_ATUAL = Chamar_Peca_Principal();
 	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;

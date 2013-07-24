@@ -1,8 +1,15 @@
 #include "engine.h"
 
+#include "assert.h"
+#ifndef ASSERT
+	#define assert(ignore)((void) 0)
+#endif
+
 int main (int argc, char *argv[]) {
 	int i;
 	
+	assert(i == 10);
+
 	Iniciar_Modulos();
 	
 	if ((i = Testar_Interface())) {

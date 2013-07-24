@@ -345,6 +345,9 @@ int main (int argc, char *argv[]) {
 	
 	Testar_Tabuleiro();
 	Testar_Peca();
+
+	Liberar_Tabuleiro();
+	Liberar_Peca();
 	
 	CU_basic_set_mode(CU_BRM_VERBOSE);
 	
