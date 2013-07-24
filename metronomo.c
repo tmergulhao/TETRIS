@@ -1,5 +1,6 @@
 #include <time.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "metronomo.h"
 
@@ -13,6 +14,9 @@ typedef struct TIPO_TEMPORIZADOR TEMPORIZADOR;
 float metronomy (float mode, int which) {
 	static TEMPORIZADOR* timer;
 	TEMPORIZADOR* timer_use;
+
+	assert(mode >= -3);
+	assert(which >= 0);
 	
 	if (!mode) {
 		while (timer) {

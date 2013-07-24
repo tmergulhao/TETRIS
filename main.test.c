@@ -1,4 +1,4 @@
-#include "engine.h"
+#include "metronomo.h"
 #include "tabuleiro.h"
 #include "peca.h"
 
@@ -7,6 +7,22 @@
 
 #include <time.h>
 #include <stdlib.h>
+
+void Testar_Metronomo (void) {
+	CU_pSuite suite;
+	
+	suite = CU_add_suite("METRONOMO",NULL,NULL);
+/*
+DEFAULT
+VIEW
+SET
+FALSEFIRE
+FIRE
+NULL
+MANY
+*/
+//sleep()//MILISECONDS
+}
 
 void Testar_Rotacionar_T () {
 	PECA* PECA_ATUAL = Chamar_Peca_Principal();
@@ -284,46 +300,51 @@ void Testar_Peca (void) {
 	CU_ADD_TEST(suite, Testar_Rotacionar_T);
 }
 
-#define Inver_Bloco(Y,X)	Acessar_Bloco(Y,X,1)
-#define Valor_Bloco(Y,X)	Acessar_Bloco(Y,X,0)
-#define Reciclar_Tabul()	Reciclar_Linha(-1)
+void Testar_Limpar_CLR_L () {
+	int i = rand()%(CANVAS_WIDTH - 1), k, j = rand()%CANVAS_HEIGHT;
+
+	for (k = 0; k < i; k++) Inver_Bloco(j,k);
+	Reciclar_Linha(j);
+	for (k = 0; k < i; k++) CU_ASSERT_TRUE(Valor_Bloco(j,k));
+	for (k = i; k < CANVAS_WIDTH; k++) CU_ASSERT_FALSE(Valor_Bloco(j,k));
+}
 
 void Testar_Limpar_ALL_L () {
 	int i, j;
 	for (j = 0; j < CANVAS_HEIGHT; j++) for (i = 0; i < CANVAS_WIDTH; i++) Inver_Bloco(j,i);
 	Reciclar_Linha(-1);
-	for (j = 0; j < CANVAS_HEIGHT; j++) for (i = 0; i < CANVAS_WIDTH; i++) if (Valor_Bloco(j,i)) CU_ASSERT_TRUE(false);
+	for (j = 0; j < CANVAS_HEIGHT; j++) for (i = 0; i < CANVAS_WIDTH; i++) CU_ASSERT_FALSE(Valor_Bloco(j,i));
 }
 
 void Testar_Limpar_NUM_L () {
-	int i, j = rand()%CANVAS_WIDTH;
+	int i, j = rand()%CANVAS_HEIGHT;
 	for (i = 0; i < CANVAS_WIDTH; i++) Inver_Bloco(j,i);
 	Reciclar_Linha(j);
-	for (i = 0; i < CANVAS_WIDTH; i++) if (Valor_Bloco(j,i)) CU_ASSERT_TRUE(false);
+	for (i = 0; i < CANVAS_WIDTH; i++) CU_ASSERT_FALSE(Valor_Bloco(j,i));
 }
 
 void Testar_Limpar_LAS_L () {
 	int i;
 	for (i = 0; i < CANVAS_WIDTH; i++) Inver_Bloco(CANVAS_HEIGHT-1,i);
 	Reciclar_Linha(CANVAS_HEIGHT-1);
-	for (i = 0; i < CANVAS_WIDTH; i++) if (Valor_Bloco(CANVAS_HEIGHT-1,i)) CU_ASSERT_TRUE(false);
+	for (i = 0; i < CANVAS_WIDTH; i++) CU_ASSERT_FALSE(Valor_Bloco(CANVAS_HEIGHT-1,i));
 }
 
 void Testar_Limpar_FIR_L () {
 	int i;
 	for (i = 0; i < CANVAS_WIDTH; i++) Inver_Bloco(0,i);
 	Reciclar_Linha(0);
-	for (i = 0; i < CANVAS_WIDTH; i++) if (Valor_Bloco(0,i)) CU_ASSERT_TRUE(false);
+	for (i = 0; i < CANVAS_WIDTH; i++) CU_ASSERT_FALSE(Valor_Bloco(0,i));
 }
 
 void Testar_Trocar_Captar_Valor () {
-	int i, j;
-	i = rand()%(CANVAS_WIDTH);
-	j = rand()%(CANVAS_HEIGHT);
+	int i = rand()%CANVAS_WIDTH, j = rand()%CANVAS_HEIGHT;
 
 	Inver_Bloco(j,i);
 	CU_ASSERT_TRUE(Valor_Bloco(j,i));
 	Inver_Bloco(j,i);
+
+	Liberar_Tabuleiro();
 }
 
 void Testar_Tabuleiro (void) {
@@ -336,6 +357,7 @@ void Testar_Tabuleiro (void) {
 	CU_ADD_TEST(suite, Testar_Limpar_LAS_L);
 	CU_ADD_TEST(suite, Testar_Limpar_NUM_L);
 	CU_ADD_TEST(suite, Testar_Limpar_ALL_L);
+	CU_ADD_TEST(suite, Testar_Limpar_CLR_L);
 }
 
 int main (int argc, char *argv[]) {
@@ -345,9 +367,11 @@ int main (int argc, char *argv[]) {
 	
 	Testar_Tabuleiro();
 	Testar_Peca();
+	Testar_Metronomo();
 
 	Liberar_Tabuleiro();
 	Liberar_Peca();
+	Desligar_Espera();
 	
 	CU_basic_set_mode(CU_BRM_VERBOSE);
 	

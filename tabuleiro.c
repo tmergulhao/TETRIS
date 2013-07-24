@@ -1,6 +1,7 @@
 #include "tabuleiro.h"
 
 #include <stdlib.h>
+#include <assert.h>
 
 TABULEIRO* Chamar_Tabuleiro () {
 	static TABULEIRO *TABULEIRO_PRINCIPAL;
@@ -42,6 +43,8 @@ bool Reciclar_Linha (int y) {
 	LINHA *LINHA_RECICLA, *LINHA_ATUAL = TABULEIRO_PRINCIPAL->ENTER;
 	
 	int i, j = 0;
+
+	assert(y < CANVAS_HEIGHT);
 	
 	if (y == 0) {
 		for (i = 0; i < CANVAS_WIDTH; i++) if (TABULEIRO_PRINCIPAL->ENTER->VALOR[i]) j++;
@@ -72,6 +75,9 @@ bool Reciclar_Linha (int y) {
 bool Acessar_Bloco (int y, int x, bool mode) {
 	TABULEIRO *TABULEIRO_PRINCIPAL = Chamar_Tabuleiro();
 	LINHA *LINHA_ATUAL = TABULEIRO_PRINCIPAL->ENTER;
+
+	assert(y < CANVAS_HEIGHT);
+	assert(x < CANVAS_WIDTH);
 	
 	while (y > 0) {
 		LINHA_ATUAL = LINHA_ATUAL->NEXT;

@@ -9,7 +9,7 @@
 
 #include <stdbool.h>
 
-#include "engine.h"
+#include "main.h"
 
 struct TIPO_LINHA {
 	struct TIPO_LINHA* NEXT;

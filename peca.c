@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
 #include "peca.h"
-#include "engine.h"
+#include "main.h"
 
 PECA* Chamar_Peca_Principal () {
 	static PECA* PECA_ATUAL;
