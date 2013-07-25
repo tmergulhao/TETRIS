@@ -4,25 +4,20 @@
 #include <assert.h>
 
 TABULEIRO* Chamar_Tabuleiro () {
-	static TABULEIRO *TABULEIRO_PRINCIPAL;
+	static TABULEIRO TABULEIRO_PRINCIPAL;
 	LINHA *LINHA_ATUAL;
 	
 	int i;
 	
-	if (!TABULEIRO_PRINCIPAL) {
-		TABULEIRO_PRINCIPAL = (TABULEIRO*)malloc(sizeof(TABULEIRO));
-		TABULEIRO_PRINCIPAL->ENTER = LINHA_ATUAL = (LINHA*)malloc(sizeof(LINHA));
+	if (!TABULEIRO_PRINCIPAL.ENTER) {
+		TABULEIRO_PRINCIPAL.ENTER = LINHA_ATUAL = (LINHA*)malloc(sizeof(LINHA));
 		
-		for (i = 1; i < CANVAS_HEIGHT; i++) LINHA_ATUAL = LINHA_ATUAL->NEXT = (LINHA*)malloc(sizeof(LINHA));
+		for (i = 0; i < CANVAS_HEIGHT - 1; i++) LINHA_ATUAL = LINHA_ATUAL->NEXT = (LINHA*)malloc(sizeof(LINHA));
 		
 		LINHA_ATUAL->NEXT = NULL;
 	}
-	if (!TABULEIRO_PRINCIPAL->ENTER) {
-		free(TABULEIRO_PRINCIPAL);
-		TABULEIRO_PRINCIPAL = NULL;
-	}
 	
-	return TABULEIRO_PRINCIPAL;
+	return &TABULEIRO_PRINCIPAL;
 }
 void Liberar_Tabuleiro () {
 	TABULEIRO *TABULEIRO_PRINCIPAL = Chamar_Tabuleiro();
@@ -36,7 +31,6 @@ void Liberar_Tabuleiro () {
 		free(LINHA_LIBERAR);
 	}
 	TABULEIRO_PRINCIPAL->ENTER = NULL;
-	Chamar_Tabuleiro();
 }
 bool Reciclar_Linha (int y) {
 	TABULEIRO *TABULEIRO_PRINCIPAL = Chamar_Tabuleiro();

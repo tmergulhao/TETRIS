@@ -18,13 +18,16 @@
 #define Desligar_Espera() 	metronomy(0,0)
 #define Tempo_Espera() 		metronomy(-1,0)
 #define Tempo_Jogo() 		metronomy(-1,1)
-#define Ver_T_Jogo()		metronomy(-2,1)
+#define Espera_Jogo()		metronomy(-2,1)
 #define Passar_Ciclo()		metronomy(-3,1)
-#define Mudar_Tempo_Jogo(X) if(BETWEEN((Ver_T_Jogo()+X),1,5)) metronomy(Ver_T_Jogo() + X,1)
+#define Acres_Tempo_Jogo(X) if(BETWEEN((Espera_Jogo()+X),1,5)) metronomy(Espera_Jogo() + X,1)
 
 // TABULEIRO DEFS
 #define Inver_Bloco(Y,X)	Acessar_Bloco(Y,X,1)
 #define Valor_Bloco(Y,X)	Acessar_Bloco(Y,X,0)
 #define Reciclar_Tabul()	Reciclar_Linha(-1)
+
+// PECA DEFS
+#define Rotacionar_Peca_(X)	Rotacionar_Peca(PECA_ATUAL)
 
 #endif

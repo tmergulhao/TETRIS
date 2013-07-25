@@ -86,7 +86,7 @@ void turn_on (int i) {
 	clrline(j);
 	if (i == 0) mvaddstr(j,CENTER(strlen("+ PLAY +")), "+ PLAY +");
 	if (i == 1) mvaddstr(j,CENTER(strlen("+ SCORE +")), "+ SCORE +");
-	if (i == 2) mvprintw(j,CENTER(1 + strlen("+  SECONDS +")), "- %.0f SECONDS +", Ver_T_Jogo());
+	if (i == 2) mvprintw(j,CENTER(1 + strlen("+  SECONDS +")), "- %.0f SECONDS +", Espera_Jogo());
 	if (i == 3) mvaddstr(j,CENTER(strlen("+ EXIT +")), "+ EXIT +");
 }
 void clean_menu_interface () {
@@ -126,7 +126,7 @@ long Score(long i) {
 		score = 0;
 		// ADD SCORE TO BOARD
 	}
-	else score += i*60/(Ver_T_Jogo());
+	else score += i*60/(Espera_Jogo());
 
 	return score;
 }
@@ -138,8 +138,8 @@ void Mover_Peca (int i) {
 	int j;
 	
 	for (j = 0; j < 4; j++) {
-		if ((	Valor_Bloco(BLOC_LOCATION_Y(j) , BLOC_LOCATION_X(j) + i))
-			||	!(BETWEEN((BLOC_LOCATION_X(j)) + i, 0, CANVAS_WIDTH-1)	)) ALERT_INTERSECTION = true;
+		if (!(BETWEEN((BLOC_LOCATION_X(j)) + i, 0, CANVAS_WIDTH-1)) ||
+			(Valor_Bloco(BLOC_LOCATION_Y(j) , BLOC_LOCATION_X(j) + i))) ALERT_INTERSECTION = true;
 	}
 	
 	if (ALERT_INTERSECTION == false) PECA_ATUAL->X += i;
@@ -176,7 +176,7 @@ int Descer_Peca () {
 	for (i = 0; i < 4; i++) if(CHECK_LINES[i])
 		LINES_WRAPPED = (Reciclar_Linha(PECA_ATUAL->Y + i - 3)) ? LINES_WRAPPED+1 : LINES_WRAPPED;
 	
-	Iniciar_Peca(rand()%7);
+	Iniciar_Peca(rand()%7,Chamar_Peca_Principal());
 	Passar_Ciclo();
 	
 	return LINES_WRAPPED;
@@ -209,7 +209,7 @@ void Finalizar_Modulos() {
 	
 	// MEMORY FREE
 	Liberar_Tabuleiro();
-	free(Chamar_Peca_Principal());
+	Liberar_Pecas();
 	Desligar_Espera();
 	
 	// NCURSES
@@ -239,11 +239,11 @@ int Capturar_Opcao() {
 				return i;
 				break;
 			case KEY_LEFT:
-				if (i == 2) Mudar_Tempo_Jogo(-1);
+				if (i == 2) Acres_Tempo_Jogo(-1);
 				turn_on(i);
 				break;
 			case KEY_RIGHT:
-				if (i == 2) Mudar_Tempo_Jogo(+1);
+				if (i == 2) Acres_Tempo_Jogo(+1);
 				turn_on(i);
 				break;
 			default:
@@ -262,7 +262,7 @@ void Jogar() {
 	set_frame();
 	
 	if (Score(0) == 0 || end == -1) {
-		Iniciar_Peca(rand()%7);
+		Iniciar_Peca(rand()%7,(Chamar_Peca_Principal()));
 		Reciclar_Tabul();
 		end = 0;
 	}
@@ -274,7 +274,7 @@ void Jogar() {
 		switch (ch) {
 			case KEY_UP:
 				Apagar_Peca();
-				Rotacionar_Peca();
+				Rotacionar_Peca(Chamar_Peca_Principal());
 				Mostrar_Peca();
 				break;
 			case KEY_LEFT:
@@ -341,7 +341,7 @@ int Testar_Interface() {
 
 	mvaddstr(SCREEN_BOTTOM - 1, CENTER(strlen("USE ARROW KEYS")), "USE ARROW KEYS");
 	
-	Iniciar_Peca(rand()%7);
+	Iniciar_Peca(rand()%7, Chamar_Peca_Principal());
 	Centralizar_Peca();
 	Mostrar_Peca();
 	
@@ -355,7 +355,7 @@ int Testar_Interface() {
 				mvaddstr(SCREEN_BOTTOM - 1,(SCREEN_WIDTH - strlen("UP"))/2, "UP");
 				
 				Apagar_Peca();
-				Rotacionar_Peca();
+				Rotacionar_Peca(Chamar_Peca_Principal());
 				Mostrar_Peca();
 				break;
 			case KEY_DOWN:
@@ -379,7 +379,7 @@ int Testar_Interface() {
 					mvaddstr(SCREEN_BOTTOM - 1,CENTER(strlen("SCAPE WITH SPACE")), "SCAPE WITH SPACE");
 					
 					Apagar_Peca();
-					Iniciar_Peca(rand()%7);
+					Iniciar_Peca(rand()%7,Chamar_Peca_Principal());
 					Centralizar_Peca();
 					Mostrar_Peca();
 				}

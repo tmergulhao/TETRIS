@@ -5,36 +5,41 @@
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
 
-#include <time.h>
 #include <stdlib.h>
+#include <time.h>
+
+void Testar_Metronomo_Set () {
+	float i = Espera_Jogo();
+
+	Acres_Tempo_Jogo((5 - i));
+	CU_ASSERT_TRUE(Espera_Jogo() == 5);
+	Acres_Tempo_Jogo(1);
+	CU_ASSERT_FALSE(Espera_Jogo() == 6);
+	Acres_Tempo_Jogo(-5);
+	CU_ASSERT_FALSE(Espera_Jogo() == 0);
+}
 
 void Testar_Metronomo (void) {
 	CU_pSuite suite;
 	
 	suite = CU_add_suite("METRONOMO",NULL,NULL);
-/*
-DEFAULT
-VIEW
-SET
-FALSEFIRE
-FIRE
-NULL
-MANY
-*/
-//sleep()//MILISECONDS
+
+	CU_ADD_TEST(suite, Testar_Metronomo_Set);
+
+	Desligar_Espera();
 }
 
 void Testar_Rotacionar_T () {
-	PECA* PECA_ATUAL = Chamar_Peca_Principal();
+	PECA* PECA_ATUAL = Chamar_Peca_Secundari();
 	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
 
 	int i;
 	bool ALERT_0, ALERT_1, ALERT_2, ALERT_3;
 
-	Iniciar_Peca(5);
+	Iniciar_Peca(5, PECA_ATUAL);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == -2) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == -1) ALERT_1 = (ALERT_1) ? false : true;
@@ -44,7 +49,7 @@ void Testar_Rotacionar_T () {
 	CU_ASSERT_TRUE(ALERT_0 && ALERT_1 && ALERT_2 && ALERT_3);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == -0) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == -0 && BLOCO[i].Y == -1) ALERT_1 = (ALERT_1) ? false : true;
@@ -54,7 +59,7 @@ void Testar_Rotacionar_T () {
 	CU_ASSERT_TRUE(ALERT_0 && ALERT_1 && ALERT_2 && ALERT_3);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == -0 && BLOCO[i].Y == -2) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == -0 && BLOCO[i].Y == -1) ALERT_1 = (ALERT_1) ? false : true;
@@ -64,7 +69,7 @@ void Testar_Rotacionar_T () {
 	CU_ASSERT_TRUE(ALERT_0 && ALERT_1 && ALERT_2 && ALERT_3);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == -1) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == -0 && BLOCO[i].Y == -1) ALERT_1 = (ALERT_1) ? false : true;
@@ -75,16 +80,16 @@ void Testar_Rotacionar_T () {
 }
 
 void Testar_Rotacionar_J () {
-	PECA* PECA_ATUAL = Chamar_Peca_Principal();
+	PECA* PECA_ATUAL = Chamar_Peca_Secundari();
 	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
 
 	int i;
 	bool ALERT_0, ALERT_1, ALERT_2, ALERT_3;
 
-	Iniciar_Peca(2);
+	Iniciar_Peca(2, PECA_ATUAL);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == +1 && BLOCO[i].Y == -0) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == -0 && BLOCO[i].Y == -0) ALERT_1 = (ALERT_1) ? false : true;
@@ -94,7 +99,7 @@ void Testar_Rotacionar_J () {
 	CU_ASSERT_TRUE(ALERT_0 && ALERT_1 && ALERT_2 && ALERT_3);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == -0) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == -0 && BLOCO[i].Y == -0) ALERT_1 = (ALERT_1) ? false : true;
@@ -104,7 +109,7 @@ void Testar_Rotacionar_J () {
 	CU_ASSERT_TRUE(ALERT_0 && ALERT_1 && ALERT_2 && ALERT_3);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == -1) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == -0 && BLOCO[i].Y == -1) ALERT_1 = (ALERT_1) ? false : true;
@@ -114,7 +119,7 @@ void Testar_Rotacionar_J () {
 	CU_ASSERT_TRUE(ALERT_0 && ALERT_1 && ALERT_2 && ALERT_3);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == -0) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == -1) ALERT_1 = (ALERT_1) ? false : true;
@@ -125,16 +130,16 @@ void Testar_Rotacionar_J () {
 }
 
 void Testar_Rotacionar_L () {
-	PECA* PECA_ATUAL = Chamar_Peca_Principal();
+	PECA* PECA_ATUAL = Chamar_Peca_Secundari();
 	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
 
 	int i;
 	bool ALERT_0, ALERT_1, ALERT_2, ALERT_3;
 
-	Iniciar_Peca(3);
+	Iniciar_Peca(3, PECA_ATUAL);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == -0) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == -1) ALERT_1 = (ALERT_1) ? false : true;
@@ -144,7 +149,7 @@ void Testar_Rotacionar_L () {
 	CU_ASSERT_TRUE(ALERT_0 && ALERT_1 && ALERT_2 && ALERT_3);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == -0) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == -1) ALERT_1 = (ALERT_1) ? false : true;
@@ -154,7 +159,7 @@ void Testar_Rotacionar_L () {
 	CU_ASSERT_TRUE(ALERT_0 && ALERT_1 && ALERT_2 && ALERT_3);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == -0) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == -0 && BLOCO[i].Y == -0) ALERT_1 = (ALERT_1) ? false : true;
@@ -164,7 +169,7 @@ void Testar_Rotacionar_L () {
 	CU_ASSERT_TRUE(ALERT_0 && ALERT_1 && ALERT_2 && ALERT_3);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == -2) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == -0 && BLOCO[i].Y == -2) ALERT_1 = (ALERT_1) ? false : true;
@@ -181,10 +186,10 @@ void Testar_Rotacionar_Z () {
 	int i;
 	bool ALERT_0, ALERT_1, ALERT_2, ALERT_3;
 
-	Iniciar_Peca(1);
+	Iniciar_Peca(1, PECA_ATUAL);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == -1) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == -0 && BLOCO[i].Y == -1) ALERT_1 = (ALERT_1) ? false : true;
@@ -194,7 +199,7 @@ void Testar_Rotacionar_Z () {
 	CU_ASSERT_TRUE(ALERT_0 && ALERT_1 && ALERT_2 && ALERT_3);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == -0 && BLOCO[i].Y == -2) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == -0 && BLOCO[i].Y == -1) ALERT_1 = (ALERT_1) ? false : true;
@@ -211,10 +216,10 @@ void Testar_Rotacionar_S () {
 	int i;
 	bool ALERT_0, ALERT_1, ALERT_2, ALERT_3;
 
-	Iniciar_Peca(0);
+	Iniciar_Peca(0, PECA_ATUAL);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == 0) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == -0 && BLOCO[i].Y == 0) ALERT_1 = (ALERT_1) ? false : true;
@@ -224,7 +229,7 @@ void Testar_Rotacionar_S () {
 	CU_ASSERT_TRUE(ALERT_0 && ALERT_1 && ALERT_2 && ALERT_3);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == -0 && BLOCO[i].Y == -0) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == -0 && BLOCO[i].Y == -1) ALERT_1 = (ALERT_1) ? false : true;
@@ -241,10 +246,10 @@ void Testar_Rotacionar_I () {
 	int i;
 	bool ALERT_0, ALERT_1, ALERT_2, ALERT_3;
 
-	Iniciar_Peca(6);
+	Iniciar_Peca(6, PECA_ATUAL);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == -2 && BLOCO[i].Y == 0) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == 0) ALERT_1 = (ALERT_1) ? false : true;
@@ -254,7 +259,7 @@ void Testar_Rotacionar_I () {
 	CU_ASSERT_TRUE(ALERT_0 && ALERT_1 && ALERT_2 && ALERT_3);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == -0) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == -1) ALERT_1 = (ALERT_1) ? false : true;
@@ -271,10 +276,10 @@ void Testar_Rotacionar_O () {
 	int i;
 	bool ALERT_0, ALERT_1, ALERT_2, ALERT_3;
 
-	Iniciar_Peca(4);
+	Iniciar_Peca(4, PECA_ATUAL);
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	Rotacionar_Peca();
+	Rotacionar_Peca_();
 	for (i = 0; i < 4; i++) {
 		if (BLOCO[i].X == 0 && BLOCO[i].Y == 0) ALERT_0 = (ALERT_0) ? false : true;
 		if (BLOCO[i].X == 0 && BLOCO[i].Y == -1) ALERT_1 = (ALERT_1) ? false : true;
@@ -282,6 +287,8 @@ void Testar_Rotacionar_O () {
 		if (BLOCO[i].X == -1 && BLOCO[i].Y == -1) ALERT_3 = (ALERT_3) ? false : true;
 	}
 	CU_ASSERT_TRUE(ALERT_0 && ALERT_1 && ALERT_2 && ALERT_3);
+
+	Liberar_Pecas();
 }
 
 void Testar_Peca (void) {
@@ -358,6 +365,8 @@ void Testar_Tabuleiro (void) {
 	CU_ADD_TEST(suite, Testar_Limpar_NUM_L);
 	CU_ADD_TEST(suite, Testar_Limpar_ALL_L);
 	CU_ADD_TEST(suite, Testar_Limpar_CLR_L);
+
+	Liberar_Tabuleiro();
 }
 
 int main (int argc, char *argv[]) {
@@ -368,10 +377,6 @@ int main (int argc, char *argv[]) {
 	Testar_Tabuleiro();
 	Testar_Peca();
 	Testar_Metronomo();
-
-	Liberar_Tabuleiro();
-	Liberar_Peca();
-	Desligar_Espera();
 	
 	CU_basic_set_mode(CU_BRM_VERBOSE);
 	

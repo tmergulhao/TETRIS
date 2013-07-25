@@ -3,20 +3,41 @@
 #include "peca.h"
 #include "main.h"
 
-PECA* Chamar_Peca_Principal () {
-	static PECA* PECA_ATUAL;
-	
-	if (!PECA_ATUAL) PECA_ATUAL = (PECA*)malloc(sizeof(PECA));
+PECA* Chamar_Peca (int mode) {
+	static GUIA_PECAS INICIO;
+	PECA* PECA_ATUAL;
+
+	if (mode == -1) {
+		while (INICIO.ENTER) {
+			PECA_ATUAL = INICIO.ENTER;
+			INICIO.ENTER = INICIO.ENTER->NEXT;
+			free(PECA_ATUAL);
+		}
+		INICIO.ENTER = NULL;
+		return NULL;
+	}
+
+	if(INICIO.ENTER == NULL) {
+		INICIO.ENTER = (PECA*)malloc(sizeof(PECA));
+		INICIO.ENTER->NEXT = NULL;
+	}
+
+	PECA_ATUAL = INICIO.ENTER;
+
+	while (mode) {
+		if (PECA_ATUAL->NEXT) PECA_ATUAL = PECA_ATUAL->NEXT;
+		else {
+			PECA_ATUAL->NEXT = (PECA*)malloc(sizeof(PECA));
+			PECA_ATUAL = PECA_ATUAL->NEXT;
+			PECA_ATUAL->NEXT = NULL;
+		}
+		mode--;
+	}
 	
 	return PECA_ATUAL;
 }
 
-void Liberar_Peca () {
-	free(Chamar_Peca_Principal());
-}
-
-void Iniciar_Peca (int i) {
-	PECA* PECA_ATUAL = Chamar_Peca_Principal();
+void Iniciar_Peca (int i, PECA* PECA_ATUAL) {
 	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
 	
 	PECA_ATUAL->Y = -1;
@@ -68,8 +89,7 @@ void Iniciar_Peca (int i) {
 	}
 }
 
-void Rotacionar_Peca () {
-	PECA* PECA_ATUAL = Chamar_Peca_Principal();
+void Rotacionar_Peca (PECA* PECA_ATUAL) {
 	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
 	
 	int i, j, 

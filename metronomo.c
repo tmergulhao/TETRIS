@@ -35,7 +35,7 @@ float metronomy (float mode, int which) {
 	timer_use = timer;
 	
 	for (; which; which--) {
-		if (!timer->NEXT) {
+		if (!timer_use->NEXT) {
 			timer_use->NEXT = (TEMPORIZADOR*)malloc(sizeof(TEMPORIZADOR));
 			timer_use->NEXT->NEXT = NULL;
 			timer_use->NEXT->espera = ESPERA_INPUT;
