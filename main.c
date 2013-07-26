@@ -33,6 +33,11 @@
 #define BLOC_LOCATION_X(Y)	PECA_ATUAL->X + BLOCO[Y].X
 #define BLOC_LOCATION_Y(X)	PECA_ATUAL->Y + BLOCO[X].Y
 
+#define SHAR_MESSAGE		"- FREAK +"
+#define HARD_MESSAGE		"- HARD +"
+#define NORM_MESSAGE		"- NOMAL +"
+#define EASY_MESSAGE		"- EASY +"
+
 int sizeWidth() {
 	static int width;
 	int row;
@@ -82,11 +87,26 @@ void turn_off (int i) {
 	if (i == 3) mvaddstr(j,CENTER(strlen("EXIT")), "EXIT");
 }
 void turn_on (int i) {
-	int j = SCR_HEIGHT_ADD + 3 + i*4;
+	int j = SCR_HEIGHT_ADD + 3 + i*4, k;
 	clrline(j);
 	if (i == 0) mvaddstr(j,CENTER(strlen("+ PLAY +")), "+ PLAY +");
 	if (i == 1) mvaddstr(j,CENTER(strlen("+ SCORE +")), "+ SCORE +");
-	if (i == 2) mvprintw(j,CENTER(1 + strlen("+  SECONDS +")), "- %.0f SECONDS +", Espera_Jogo());
+	if (i == 2) {
+		switch (k = 10*Espera_Jogo()) {
+			case 3:
+				mvaddstr(j,CENTER(strlen(SHAR_MESSAGE)), SHAR_MESSAGE);
+				break;
+			case 5:
+				mvaddstr(j,CENTER(strlen(HARD_MESSAGE)), HARD_MESSAGE);
+				break;
+			case 10:
+				mvaddstr(j,CENTER(strlen(NORM_MESSAGE)), NORM_MESSAGE);
+				break;
+			case 20:
+				mvaddstr(j,CENTER(strlen(EASY_MESSAGE)), EASY_MESSAGE);
+				break;
+		}
+	}
 	if (i == 3) mvaddstr(j,CENTER(strlen("+ EXIT +")), "+ EXIT +");
 }
 void clean_menu_interface () {
@@ -181,6 +201,27 @@ int Descer_Peca () {
 	
 	return LINES_WRAPPED;
 }
+void Rotacionar_Peca_Check () {
+	PECA *PECA_PRI = Chamar_Peca_Principal(), *PECA_ATUAL = Chamar_Peca_Secundari();
+	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
+	bool ALERT_INTERSECTION = false;
+	int i;
+
+	PECA_ATUAL->X = PECA_PRI->X;
+	PECA_ATUAL->Y = PECA_PRI->Y;
+	for (i = 0; i < 4; i++) {
+		PECA_ATUAL->BLOCO[i].X = PECA_PRI->BLOCO[i].X;
+		PECA_ATUAL->BLOCO[i].Y = PECA_PRI->BLOCO[i].Y;
+	}
+
+	Rotacionar_Peca(PECA_ATUAL);
+	for (i = 0; i < 4; i++) {
+		if (!(BETWEEN(BLOC_LOCATION_X(i), 0, CANVAS_WIDTH-1)) ||
+			(Valor_Bloco(BLOC_LOCATION_Y(i) , BLOC_LOCATION_X(i)))) ALERT_INTERSECTION = true;
+	}
+
+	if (!(ALERT_INTERSECTION)) Rotacionar_Peca(PECA_PRI);
+}
 
 // INTERFACES EXTERNAS
 
@@ -216,7 +257,7 @@ void Finalizar_Modulos() {
 	endwin();				// end curses mode
 }
 int Capturar_Opcao() {
-	int ch, i = 0;
+	int ch, j, i;
 
 	clrline(0);
 	for (i = 4; i; i--) turn_off(i-1);
@@ -239,11 +280,39 @@ int Capturar_Opcao() {
 				return i;
 				break;
 			case KEY_LEFT:
-				if (i == 2) Acres_Tempo_Jogo(-1);
+				if (i == 2) {
+					switch (j = 10*Espera_Jogo()) {
+						case 5:
+							Mudar_Tempo_Jogo(0.3);
+							break;
+						case 10:
+							Mudar_Tempo_Jogo(0.5);
+							break;
+						case 20:
+							Mudar_Tempo_Jogo(1);
+							break;
+						default:
+							break;
+					}
+				}
 				turn_on(i);
 				break;
 			case KEY_RIGHT:
-				if (i == 2) Acres_Tempo_Jogo(+1);
+				if (i == 2) {
+					switch (j = 10*Espera_Jogo()) {
+						case 3:
+							Mudar_Tempo_Jogo(0.5);
+							break;
+						case 5:
+							Mudar_Tempo_Jogo(1);
+							break;
+						case 10:
+							Mudar_Tempo_Jogo(2);
+							break;
+						default:
+							break;
+					}
+				}
 				turn_on(i);
 				break;
 			default:
@@ -274,7 +343,7 @@ void Jogar() {
 		switch (ch) {
 			case KEY_UP:
 				Apagar_Peca();
-				Rotacionar_Peca(Chamar_Peca_Principal());
+				Rotacionar_Peca_Check();
 				Mostrar_Peca();
 				break;
 			case KEY_LEFT:
@@ -330,7 +399,7 @@ int Testar_Interface() {
 		Reciclar_Linha(19);
 		while( !(Tempo_Espera()) && (getch()) != KEY_SPACE) {}
 	}
-	metronomy(3,0);
+	metronomy(4,0);
 	
 	mvaddstr(SCR_HEIGHT_ADD + 1, CENTER(strlen(name)),name);
 	
@@ -343,7 +412,6 @@ int Testar_Interface() {
 	
 	Iniciar_Peca(rand()%7, Chamar_Peca_Principal());
 	Centralizar_Peca();
-	Mostrar_Peca();
 	
 	refresh();
 	

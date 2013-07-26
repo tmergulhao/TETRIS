@@ -7,7 +7,7 @@
 #define EXT_MOD_METRONOMO extern
 #endif
 
-#define ESPERA_INPUT 		3 // seconds
+#define ESPERA_INPUT 		2 // seconds
 
 // Interface para ENGINE.C
 EXT_MOD_METRONOMO float metronomy (float mode, int which);
