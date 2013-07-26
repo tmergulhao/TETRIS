@@ -13,7 +13,7 @@ void Testar_Metronomo_Set () {
 
 	Mudar_Tempo_Jogo(1);
 	CU_ASSERT_TRUE(Espera_Jogo() == 1);
-	Acres_Tempo_Jogo(0.1);
+	Mudar_Tempo_Jogo(0.1);
 	CU_ASSERT_FALSE(Espera_Jogo() == 0.1);
 }
 
