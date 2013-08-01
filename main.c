@@ -204,7 +204,7 @@ int Descer_Peca () {
 void Rotacionar_Peca_Check () {
 	PECA *PECA_PRI = Chamar_Peca_Principal(), *PECA_ATUAL = Chamar_Peca_Secundari();
 	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
-	bool ALERT_INTERSECTION = false;
+	bool ALERT_INTERSECTION = false, ALERT_INTERSECTION_LEFT = false, ALERT_INTERSECTION_RIGHT = false;
 	int i;
 
 	PECA_ATUAL->X = PECA_PRI->X;
@@ -218,9 +218,21 @@ void Rotacionar_Peca_Check () {
 	for (i = 0; i < 4; i++) {
 		if (!(BETWEEN(BLOC_LOCATION_X(i), 0, CANVAS_WIDTH-1)) ||
 			(Valor_Bloco(BLOC_LOCATION_Y(i) , BLOC_LOCATION_X(i)))) ALERT_INTERSECTION = true;
+		if (!(BETWEEN(BLOC_LOCATION_X(i)-1, 0, CANVAS_WIDTH-1)) ||
+			(Valor_Bloco(BLOC_LOCATION_Y(i) , BLOC_LOCATION_X(i)-1))) ALERT_INTERSECTION_LEFT = true;
+		if (!(BETWEEN(BLOC_LOCATION_X(i)+1, 0, CANVAS_WIDTH-1)) ||
+			(Valor_Bloco(BLOC_LOCATION_Y(i) , BLOC_LOCATION_X(i)+1))) ALERT_INTERSECTION_RIGHT = true;
 	}
 
-	if (!(ALERT_INTERSECTION)) Rotacionar_Peca(PECA_PRI);
+	if (ALERT_INTERSECTION) {
+		if (!(ALERT_INTERSECTION_LEFT)) {
+			PECA_PRI->X--;
+			Rotacionar_Peca(PECA_PRI);
+		} else if (!(ALERT_INTERSECTION_RIGHT)) {
+			PECA_PRI->X++;
+			Rotacionar_Peca(PECA_PRI);
+		}
+	} else Rotacionar_Peca(PECA_PRI);
 }
 
 // INTERFACES EXTERNAS
