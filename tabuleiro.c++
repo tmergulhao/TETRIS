@@ -1,37 +1,23 @@
-#include "tabuleiro.h"
-
-#include <assert.h>
+#include "tabuleiro.h++"
 
 #include <iostream>
 using namespace std;
 
 ClassTabuleiro::ClassTabuleiro () {
-	LINHA *LINHA_ATUAL;
-	
-	ENTER = LINHA_ATUAL = new (nothrow) LINHA[CANVAS_HEIGHT];
+	HEAD = ENTER = new (nothrow) LINHA[CANVAS_HEIGHT];
 	
 	for (int i = 0; i < CANVAS_HEIGHT - 1; i++) {
-		LINHA_ATUAL->NEXT = new (nothrow) LINHA[CANVAS_HEIGHT];
-		LINHA_ATUAL = LINHA_ATUAL->NEXT;
+		ENTER = ENTER->NEXT = ENTER+1;
 	}
 	
-	LINHA_ATUAL->NEXT = NULL;
-}
-ClassTabuleiro::~ClassTabuleiro () {
-	LINHA *LINHA_ATUAL = ENTER;
+	ENTER->NEXT = NULL;
 	
-	for (int i = 0; i < CANVAS_HEIGHT; i++) {
-		LINHA_ATUAL = ENTER;
-		ENTER = ENTER->NEXT;
-		delete LINHA_ATUAL;
-	}
+	ENTER = HEAD;
 }
 bool ClassTabuleiro::Reciclar_Linha (int y) {
 	LINHA *LINHA_RECICLA, *LINHA_ATUAL = ENTER;
 	
 	int i, j = 0;
-
-	assert(y < CANVAS_HEIGHT);
 	
 	if (y == 0) {
 		for (i = 0; i < CANVAS_WIDTH; i++) if (ENTER->VALOR[i]) j++;
@@ -59,18 +45,19 @@ bool ClassTabuleiro::Reciclar_Linha (int y) {
 	
 	return 1;
 }
-bool ClassTabuleiro::Acessar_Bloco (int y, int x, bool mode) {
+bool ClassTabuleiro::Valor_Bloco (int y, int x) {
 	LINHA *LINHA_ATUAL = ENTER;
-
-	assert(y < CANVAS_HEIGHT);
-	assert(x < CANVAS_WIDTH);
 	
-	while (y > 0) {
-		LINHA_ATUAL = LINHA_ATUAL->NEXT;
-		y--;
-	}
-
-	if (mode) LINHA_ATUAL->VALOR[x] = !LINHA_ATUAL->VALOR[x];
+	for ( ; y > 0; y--) LINHA_ATUAL = LINHA_ATUAL->NEXT;
+	
+	return LINHA_ATUAL->VALOR[x];
+}
+bool ClassTabuleiro::Inver_Bloco (int y, int x) {
+	LINHA *LINHA_ATUAL = ENTER;
+	
+	for ( ; y > 0; y--) LINHA_ATUAL = LINHA_ATUAL->NEXT;
+	
+	LINHA_ATUAL->VALOR[x] = !LINHA_ATUAL->VALOR[x];
 	
 	return LINHA_ATUAL->VALOR[x];
 }

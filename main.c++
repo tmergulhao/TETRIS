@@ -5,10 +5,10 @@
 #include <limits.h>
 #include <assert.h>
 
-#include "main.h"
-#include "peca.h"
-#include "metronomo.h"
-#include "tabuleiro.h"
+#include "main.h++"
+#include "peca.h++"
+#include "metronomo.h++"
+#include "tabuleiro.h++"
 
 #define KEY_SPACE			32
 #define numlen(X) 			((X > 9) ? (X > 99) ? (X > 999) ? (X > 9999) ? (X > 99999) ? (X > 999999) ? (X > 9999999) ? 8 : 7 : 6 : 5 : 4 : 3 : 2 : 1)
@@ -33,10 +33,10 @@
 #define NORM_MESSAGE		"- NOMAL +"
 #define EASY_MESSAGE		"- EASY +"
 
-
 // Global Vars
 ClassPeca PECA_PRI;
 ClassTabuleiro TABULEIRO_PRI;
+ClassMetronomy T_JOGO, T_INTERFACE;
 int SCREEN_WIDTH, SCREEN_HEIGHT;
 
 void display_piece (int ON) {
@@ -75,7 +75,7 @@ void turn_on (int i) {
 	if (i == 0) mvaddstr(j,CENTER(strlen("+ PLAY +")), "+ PLAY +");
 	if (i == 1) mvaddstr(j,CENTER(strlen("+ SCORE +")), "+ SCORE +");
 	if (i == 2) {
-		switch (k = 10*Espera_Jogo()) {
+		switch (k = 10*T_JOGO.ViewTempo()) {
 			case 3:
 				mvaddstr(j,CENTER(strlen(SHAR_MESSAGE)), SHAR_MESSAGE);
 				break;
@@ -118,7 +118,7 @@ long Score(long i) {
 		score = 0;
 		// ADD SCORE TO BOARD
 	}
-	else score += i*60/(Espera_Jogo());
+	else score += i*60/(T_JOGO.ViewTempo());
 
 	return score;
 }
@@ -148,7 +148,7 @@ int Descer_Peca () {
 			if (ALERT_OVER) return -1;
 		} else {
 			PECA_PRI.Y++;
-			Passar_Ciclo();
+			T_JOGO.FalseFire();
 			
 			return 0;
 		}
@@ -165,7 +165,7 @@ int Descer_Peca () {
 	
 	PECA_PRI.Iniciar_Peca(rand()%7);
 	
-	Passar_Ciclo();
+	T_JOGO.FalseFire();
 	
 	return LINES_WRAPPED;
 }
@@ -220,10 +220,7 @@ void Iniciar_Modulos() {
 void Finalizar_Modulos() {
 	//MESSAGE
 	clrline(0);mvaddstr(SCR_HEIGHT_ADD+(20/2), CENTER(strlen(final_words)), final_words);
-	while( !(Tempo_Espera()) && (getch()) != KEY_SPACE) {}
-	
-	// MEMORY FREE
-	Desligar_Espera();
+	while( !(T_INTERFACE.Tempo()) && (getch()) != KEY_SPACE) {}
 	
 	// NCURSES
 	endwin();				// end curses mode
@@ -253,15 +250,15 @@ int Capturar_Opcao() {
 				break;
 			case KEY_LEFT:
 				if (i == 2) {
-					switch (j = 10*Espera_Jogo()) {
+					switch (j = T_JOGO.ViewTempo()*10) {
 						case 5:
-							Mudar_Tempo_Jogo(0.3);
+							T_JOGO.SetTempo(0.3);
 							break;
 						case 10:
-							Mudar_Tempo_Jogo(0.5);
+							T_JOGO.SetTempo(0.5);
 							break;
 						case 20:
-							Mudar_Tempo_Jogo(1);
+							T_JOGO.SetTempo(1);
 							break;
 						default:
 							break;
@@ -271,15 +268,15 @@ int Capturar_Opcao() {
 				break;
 			case KEY_RIGHT:
 				if (i == 2) {
-					switch (j = 10*Espera_Jogo()) {
+					switch (j = T_JOGO.ViewTempo()*10) {
 						case 3:
-							Mudar_Tempo_Jogo(0.5);
+							T_JOGO.SetTempo(0.5);
 							break;
 						case 5:
-							Mudar_Tempo_Jogo(1);
+							T_JOGO.SetTempo(1);
 							break;
 						case 10:
-							Mudar_Tempo_Jogo(2);
+							T_JOGO.SetTempo(2);
 							break;
 						default:
 							break;
@@ -288,11 +285,10 @@ int Capturar_Opcao() {
 				turn_on(i);
 				break;
 			default:
-				if (Tempo_Espera()) mvaddstr(SCREEN_BOTTOM - 1,CENTER(strlen("SELECT WITH SPACE")), "SELECT WITH SPACE");
+				if (T_INTERFACE.Tempo()) mvaddstr(SCREEN_BOTTOM - 1,CENTER(strlen("SELECT WITH SPACE")), "SELECT WITH SPACE");
 		}
 		refresh();
 	}
-	Desligar_Espera();
 	return 0;
 }
 void Jogar() {
@@ -337,7 +333,7 @@ void Jogar() {
 				break;
 			default:
 				Apagar_Peca();
-				if (Tempo_Jogo()) if ((end = Descer_Peca()) != -1 && end >= 0) Score(end);
+				if (T_JOGO.Tempo()) if ((end = Descer_Peca()) != -1 && end >= 0) Score(end);
 				Mostrar_Tabuleiro();
 				Mostrar_Peca();
 				break;
@@ -365,13 +361,13 @@ int Testar_Interface() {
 	for (i = 0; i < CANVAS_HEIGHT; i++) for (j = 0; j < CANVAS_WIDTH; j++) TABULEIRO_PRI.Inver_Bloco(i,j);
 	Mostrar_Tabuleiro();refresh();
 
-	metronomy(0.05,0);
+	T_INTERFACE.SetTempo(0.05);
 	for (i = 0; i < CANVAS_HEIGHT+1; i++) {
 		Mostrar_Tabuleiro();refresh();
 		TABULEIRO_PRI.Reciclar_Linha(19);
-		while( !(Tempo_Espera()) && (getch()) != KEY_SPACE) {}
+		while( !(T_INTERFACE.Tempo()) && (getch()) != KEY_SPACE) {}
 	}
-	metronomy(4,0);
+	T_INTERFACE.SetTempo(4);
 	
 	mvaddstr(SCR_HEIGHT_ADD + 1, CENTER(strlen(name)),name);
 	
@@ -389,7 +385,7 @@ int Testar_Interface() {
 	
 	refresh();
 	
-	while ( (i = Tempo_Espera()) || (ch = getch()) != KEY_SPACE ) {
+	while ( (i = T_INTERFACE.Tempo()) || (ch = getch()) != KEY_SPACE ) {
 		
 		switch (ch) {
 			case KEY_UP:

@@ -1,5 +1,5 @@
-#include "peca.h"
-#include "main.h"
+#include "peca.h++"
+#include "main.h++"
 
 void ClassPeca::operator= (ClassPeca param) {
 	X = param.X;

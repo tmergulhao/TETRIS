@@ -1,4 +1,4 @@
 TETRIS
 ======
 
-My tetris implementation in ANSI C using NCURSES terminal interface.
+My tetris implementation in C++ using NCURSES terminal interface.

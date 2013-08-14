@@ -1,11 +1,5 @@
 #ifndef MOD_PECA
 	#define MOD_PECA
-
-	#ifdef SERVIDOR_PECA
-		#define EXT_MOD_PECA
-	#else
-		#define EXT_MOD_PECA extern
-	#endif
 	
 	class ClassPeca {
 		public:
@@ -22,5 +16,4 @@
 			
 			void operator = (ClassPeca);
 	};
-
 #endif

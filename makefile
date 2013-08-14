@@ -1,7 +1,8 @@
+MAIN = main.o
 OBJECTS = peca.o metronomo.o tabuleiro.o
-SOURCES = ${OBJECTS,  .o=.c}
-HEADERS = ${OBJECTS,  .o=.h}
-SELF = ${@, .o=.c} ${@, .o=.h}
+SOURCES = ${OBJECTS,  .o=.c++}
+HEADERS = ${OBJECTS,  .o=.h++}
+SELF = ${@, .o=.c++} ${@, .o=.h++}
 COMPILER = g++
 
 TOPFLAGS = -lncurses
@@ -20,7 +21,7 @@ compile: main.o ${OBJECTS}
 	${COMPILER} $? ${TOPFLAGS} ${DFLAGS} -o compiled.out
 
 compile-test: main.test.o ${OBJECTS}
-	${COMPILER} $? ${TOPFLAGS} ${DFLAGS} -o compiled.out
+	${COMPILER} $? ${DFLAGS} -o compiled.out
 
 run:
 	./compiled.out
@@ -33,17 +34,17 @@ cover:
 clean:
 	rm *.o *.out *.gcov *.gcda *.gcno
 
-main.o: main.c ${SOURCES} ${HEADERS}
-	${COMPILER} -c ${DFLAGS} main.c
+main.o: ${SELF} ${SOURCES} ${HEADERS}
+	${COMPILER} -c ${DFLAGS} main.c++
 
 main.test.o: ${SELF} ${SOURCES} ${HEADERS}
-	${COMPILER} -c ${DFLAGS} main.test.c
+	${COMPILER} -c ${DFLAGS} main.test.c++
 
-peca.o: ${SELF} main.h
-	${COMPILER} -c ${DFLAGS} peca.c
+peca.o: ${SELF} main.h++
+	${COMPILER} -c ${DFLAGS} peca.c++
 
-tabuleiro.o: ${SELF} main.h
-	${COMPILER} -c ${DFLAGS} tabuleiro.c
+tabuleiro.o: ${SELF} main.h++
+	${COMPILER} -c ${DFLAGS} tabuleiro.c++
 
 metronomo.o: ${SELF}
-	${COMPILER} -c ${DFLAGS} metronomo.c
+	${COMPILER} -c ${DFLAGS} metronomo.c++

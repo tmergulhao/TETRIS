@@ -1,6 +1,6 @@
-#include "metronomo.h"
-#include "tabuleiro.h"
-#include "peca.h"
+#include "metronomo.h++"
+#include "tabuleiro.h++"
+#include "peca.h++"
 
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
@@ -8,23 +8,23 @@
 #include <stdlib.h>
 #include <time.h>
 
-void Testar_Metronomo_Set () {
-	float i = Espera_Jogo();
+ClassMetronomy METRONOMY;
 
-	Mudar_Tempo_Jogo(1);
-	CU_ASSERT_TRUE(Espera_Jogo() == 1);
-	Mudar_Tempo_Jogo(0.1);
-	CU_ASSERT_FALSE(Espera_Jogo() == 0.1);
+void Testar_Metronomo_Set () {
+	float i = METRONOMY.ViewTempo();
+
+	METRONOMY.SetTempo(1);
+	CU_ASSERT_TRUE(METRONOMY.ViewTempo() == 1);
+	METRONOMY.SetTempo(0.1);
+	CU_ASSERT_FALSE(METRONOMY.ViewTempo() == 0.1);
 }
 
 void Testar_Metronomo (void) {
 	CU_pSuite suite;
 	
 	suite = CU_add_suite("METRONOMO",NULL,NULL);
-
+	
 	CU_ADD_TEST(suite, Testar_Metronomo_Set);
-
-	Desligar_Espera();
 }
 
 ClassPeca PECA_ATUAL, PECA_SEC;
@@ -337,7 +337,7 @@ void Testar_Limpar_FIR_L () {
 	for (i = 0; i < CANVAS_WIDTH; i++) CU_ASSERT_FALSE(TABULEIRO_PRI.Valor_Bloco(0,i));
 }
 
-void Testar_Trocar_Captar_Valor () {
+void Testar_Trocar_VALUE () {
 	int i = rand()%CANVAS_WIDTH, j = rand()%CANVAS_HEIGHT;
 	
 	TABULEIRO_PRI.Inver_Bloco(j,i);
@@ -350,7 +350,7 @@ void Testar_Tabuleiro (void) {
 	
 	suite = CU_add_suite("TABULEIRO",NULL,NULL);
 	
-	CU_ADD_TEST(suite, Testar_Trocar_Captar_Valor);
+	CU_ADD_TEST(suite, Testar_Trocar_VALUE);
 	CU_ADD_TEST(suite, Testar_Limpar_FIR_L);
 	CU_ADD_TEST(suite, Testar_Limpar_LAS_L);
 	CU_ADD_TEST(suite, Testar_Limpar_NUM_L);
