@@ -12,8 +12,6 @@
 
 #define KEY_SPACE			32
 #define numlen(X) 			((X > 9) ? (X > 99) ? (X > 999) ? (X > 9999) ? (X > 99999) ? (X > 999999) ? (X > 9999999) ? 8 : 7 : 6 : 5 : 4 : 3 : 2 : 1)
-#define SCREEN_WIDTH 		sizeWidth()
-#define SCREEN_HEIGHT 		sizeHeight()
 #define SCR_WIDTH_ADD		(SCREEN_WIDTH - 22)/2 + 1
 #define SCR_HEIGHT_ADD		(SCREEN_HEIGHT - 22)/2 + 1
 #define CENTER(X)			SCR_WIDTH_ADD + (CANVAS_WIDTH*2 - (X))/2
@@ -30,36 +28,20 @@
 #define Mostrar_Peca()		display_piece(1)
 #define Apagar_Peca()		display_piece(0)
 
-#define BLOC_LOCATION_X(Y)	PECA_ATUAL->X + BLOCO[Y].X
-#define BLOC_LOCATION_Y(X)	PECA_ATUAL->Y + BLOCO[X].Y
-
 #define SHAR_MESSAGE		"- FREAK +"
 #define HARD_MESSAGE		"- HARD +"
 #define NORM_MESSAGE		"- NOMAL +"
 #define EASY_MESSAGE		"- EASY +"
 
-int sizeWidth() {
-	static int width;
-	int row;
-	if (!width) getmaxyx(stdscr,row,width); // just in case you wonder: it's a MACRO
-	return width;
-}
-int sizeHeight() {
-	static int height;
-	int col;
-	if (!height) getmaxyx(stdscr,height,col); // just in case you wonder: it's a MACRO
-	return height;
-}
+
+// Global Vars
+ClassPeca PECA_PRI;
+int SCREEN_WIDTH, SCREEN_HEIGHT;
 
 void display_piece (int ON) {
-	PECA* PECA_ATUAL = Chamar_Peca_Principal();
-	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
-	
-	int i;
-	
-	for (i = 0; i < 4; i++) if (BETWEEN((BLOC_LOCATION_Y(i)),0,20) && BETWEEN((BLOC_LOCATION_X(i)),0,9)) {
-		if (ON) mvaddstr((SCR_HEIGHT_ADD + PECA_ATUAL->Y + BLOCO[i].Y), (SCR_WIDTH_ADD + (PECA_ATUAL->X + BLOCO[i].X)*2), 	"[]");
-		else mvaddstr((SCR_HEIGHT_ADD + PECA_ATUAL->Y + BLOCO[i].Y), (SCR_WIDTH_ADD + (PECA_ATUAL->X + BLOCO[i].X)*2), 	"  ");
+	for (int i = 0; i < 4; i++) if (BETWEEN(PECA_PRI.CoordY(i),0,20) && BETWEEN(PECA_PRI.CoordX(i),0,9)) {
+		if (ON) mvaddstr((SCR_HEIGHT_ADD + PECA_PRI.CoordY(i)), (SCR_WIDTH_ADD + (PECA_PRI.CoordX(i))*2), 	"[]");
+		else 	mvaddstr((SCR_HEIGHT_ADD + PECA_PRI.CoordY(i)), (SCR_WIDTH_ADD + (PECA_PRI.CoordX(i))*2), 	"  ");
 	}
 }
 void clrline (int i) {
@@ -135,11 +117,6 @@ void Mostrar_Tabuleiro () {
 		LINHA_ATUAL = LINHA_ATUAL->NEXT;
 	}
 }
-void Centralizar_Peca () {
-	PECA* PECA_ATUAL = Chamar_Peca_Principal();
-	PECA_ATUAL->Y = 14;
-	PECA_ATUAL->X = 5;
-}
 long Score(long i) {
 	static long score;
 	if (i < 0) {
@@ -151,36 +128,32 @@ long Score(long i) {
 	return score;
 }
 void Mover_Peca (int i) {
-	PECA* PECA_ATUAL = Chamar_Peca_Principal();
-	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
 	bool ALERT_INTERSECTION = false;
 	
 	int j;
 	
 	for (j = 0; j < 4; j++) {
-		if (!(BETWEEN((BLOC_LOCATION_X(j)) + i, 0, CANVAS_WIDTH-1)) ||
-			(Valor_Bloco(BLOC_LOCATION_Y(j) , BLOC_LOCATION_X(j) + i))) ALERT_INTERSECTION = true;
+		if (	!(BETWEEN(PECA_PRI.CoordX(j) + i, 0, CANVAS_WIDTH-1)) ||
+				Valor_Bloco(PECA_PRI.CoordY(j) , PECA_PRI.CoordX(j) + i)	) ALERT_INTERSECTION = true;
 	}
 	
-	if (ALERT_INTERSECTION == false) PECA_ATUAL->X += i;
+	if (ALERT_INTERSECTION == false) PECA_PRI.X += i;
 }
 int Descer_Peca () {
-	PECA* PECA_ATUAL = Chamar_Peca_Principal();
-	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
 	
 	int i, LINES_WRAPPED = 0, min_y = 1;
 	
 	bool ALERT_INTERSECTION = false, ALERT_OVER = false, CHECK_LINES[4];
 	
-	if (PECA_ATUAL->Y < 19) { 
+	if (PECA_PRI.Y < 19) { 
 		for (i = 0; i < 4; i++) {
-			if (Valor_Bloco(BLOC_LOCATION_Y(i)+1 , BLOC_LOCATION_X(i))) ALERT_INTERSECTION = true;
-			if (BLOC_LOCATION_Y(i) < 0) ALERT_OVER = true;
+			if (Valor_Bloco(PECA_PRI.CoordY(i) + 1 , PECA_PRI.CoordX(i))) ALERT_INTERSECTION = true;
+			if (PECA_PRI.CoordY(i) < 0) ALERT_OVER = true;
 		}
 		if (ALERT_INTERSECTION) {
 			if (ALERT_OVER) return -1;
 		} else {
-			PECA_ATUAL->Y++;
+			PECA_PRI.Y++;
 			Passar_Ciclo();
 			
 			return 0;
@@ -188,51 +161,46 @@ int Descer_Peca () {
 	}
 	
 	for (i = 0; i < 4; i++) {
-		Inver_Bloco(BLOC_LOCATION_Y(i) , BLOC_LOCATION_X(i));
+		Inver_Bloco(PECA_PRI.CoordY(i) , PECA_PRI.CoordX(i));
 		
-		CHECK_LINES[BLOCO[i].Y + 3] = true;
+		CHECK_LINES[PECA_PRI.BLOCO[i].Y + 3] = true;
 	}
 	
 	for (i = 0; i < 4; i++) if(CHECK_LINES[i])
-		LINES_WRAPPED = (Reciclar_Linha(PECA_ATUAL->Y + i - 3)) ? LINES_WRAPPED+1 : LINES_WRAPPED;
+		LINES_WRAPPED = (Reciclar_Linha(PECA_PRI.Y + i - 3)) ? LINES_WRAPPED+1 : LINES_WRAPPED;
 	
-	Iniciar_Peca(rand()%7,Chamar_Peca_Principal());
+	PECA_PRI.Iniciar_Peca(rand()%7);
+	
 	Passar_Ciclo();
 	
 	return LINES_WRAPPED;
 }
 void Rotacionar_Peca_Check () {
-	PECA *PECA_PRI = Chamar_Peca_Principal(), *PECA_ATUAL = Chamar_Peca_Secundari();
-	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
 	bool ALERT_INTERSECTION = false, ALERT_INTERSECTION_LEFT = false, ALERT_INTERSECTION_RIGHT = false;
 	int i;
-
-	PECA_ATUAL->X = PECA_PRI->X;
-	PECA_ATUAL->Y = PECA_PRI->Y;
+	
+	ClassPeca PECA_ATUAL = PECA_PRI;
+	
+	PECA_ATUAL.Rotacionar_Peca();
+	
 	for (i = 0; i < 4; i++) {
-		PECA_ATUAL->BLOCO[i].X = PECA_PRI->BLOCO[i].X;
-		PECA_ATUAL->BLOCO[i].Y = PECA_PRI->BLOCO[i].Y;
-	}
-
-	Rotacionar_Peca(PECA_ATUAL);
-	for (i = 0; i < 4; i++) {
-		if (!(BETWEEN(BLOC_LOCATION_X(i), 0, CANVAS_WIDTH-1)) ||
-			(Valor_Bloco(BLOC_LOCATION_Y(i) , BLOC_LOCATION_X(i)))) ALERT_INTERSECTION = true;
-		if (!(BETWEEN(BLOC_LOCATION_X(i)-1, 0, CANVAS_WIDTH-1)) ||
-			(Valor_Bloco(BLOC_LOCATION_Y(i) , BLOC_LOCATION_X(i)-1))) ALERT_INTERSECTION_LEFT = true;
-		if (!(BETWEEN(BLOC_LOCATION_X(i)+1, 0, CANVAS_WIDTH-1)) ||
-			(Valor_Bloco(BLOC_LOCATION_Y(i) , BLOC_LOCATION_X(i)+1))) ALERT_INTERSECTION_RIGHT = true;
+		if (!(BETWEEN(PECA_ATUAL.CoordX(i), 0, CANVAS_WIDTH-1)) ||
+			(Valor_Bloco(PECA_ATUAL.CoordY(i) , PECA_ATUAL.CoordX(i)))) ALERT_INTERSECTION = true;
+		if (!(BETWEEN(PECA_ATUAL.CoordX(i)-1, 0, CANVAS_WIDTH-1)) ||
+			(Valor_Bloco(PECA_ATUAL.CoordY(i) , PECA_ATUAL.CoordX(i)-1))) ALERT_INTERSECTION_LEFT = true;
+		if (!(BETWEEN(PECA_ATUAL.CoordX(i)+1, 0, CANVAS_WIDTH-1)) ||
+			(Valor_Bloco(PECA_ATUAL.CoordY(i) , PECA_ATUAL.CoordX(i)+1))) ALERT_INTERSECTION_RIGHT = true;
 	}
 
 	if (ALERT_INTERSECTION) {
 		if (!(ALERT_INTERSECTION_LEFT)) {
-			PECA_PRI->X--;
-			Rotacionar_Peca(PECA_PRI);
+			PECA_PRI.X--;
+			PECA_PRI.Rotacionar_Peca();
 		} else if (!(ALERT_INTERSECTION_RIGHT)) {
-			PECA_PRI->X++;
-			Rotacionar_Peca(PECA_PRI);
+			PECA_PRI.X++;
+			PECA_PRI.Rotacionar_Peca();
 		}
-	} else Rotacionar_Peca(PECA_PRI);
+	} else PECA_PRI.Rotacionar_Peca();
 }
 
 // INTERFACES EXTERNAS
@@ -246,6 +214,7 @@ void Iniciar_Modulos() {
 	start_color(); 			// colors
 	timeout(0000); 			// miliseconds, timeout outset
 	curs_set(0);			// invisible cursor
+	getmaxyx(stdscr,SCREEN_HEIGHT,SCREEN_WIDTH); // just in case you wonder: it's a MACRO
 	
 	// PHOSPHORUS TERMINAL GREEN
 	init_pair(1, COLOR_GREEN, COLOR_BLACK);
@@ -262,7 +231,6 @@ void Finalizar_Modulos() {
 	
 	// MEMORY FREE
 	Liberar_Tabuleiro();
-	Liberar_Pecas();
 	Desligar_Espera();
 	
 	// NCURSES
@@ -343,7 +311,7 @@ void Jogar() {
 	set_frame();
 	
 	if (Score(0) == 0 || end == -1) {
-		Iniciar_Peca(rand()%7,(Chamar_Peca_Principal()));
+		PECA_PRI.Iniciar_Peca(rand()%7);
 		Reciclar_Tabul();
 		end = 0;
 	}
@@ -422,8 +390,10 @@ int Testar_Interface() {
 
 	mvaddstr(SCREEN_BOTTOM - 1, CENTER(strlen("USE ARROW KEYS")), "USE ARROW KEYS");
 	
-	Iniciar_Peca(rand()%7, Chamar_Peca_Principal());
-	Centralizar_Peca();
+	PECA_PRI.Iniciar_Peca(rand()%7);
+	
+	PECA_PRI.Y = 14;
+	PECA_PRI.X = 5;
 	
 	refresh();
 	
@@ -435,7 +405,7 @@ int Testar_Interface() {
 				mvaddstr(SCREEN_BOTTOM - 1,(SCREEN_WIDTH - strlen("UP"))/2, "UP");
 				
 				Apagar_Peca();
-				Rotacionar_Peca(Chamar_Peca_Principal());
+				PECA_PRI.Rotacionar_Peca();
 				Mostrar_Peca();
 				break;
 			case KEY_DOWN:
@@ -459,8 +429,12 @@ int Testar_Interface() {
 					mvaddstr(SCREEN_BOTTOM - 1,CENTER(strlen("SCAPE WITH SPACE")), "SCAPE WITH SPACE");
 					
 					Apagar_Peca();
-					Iniciar_Peca(rand()%7,Chamar_Peca_Principal());
-					Centralizar_Peca();
+					
+					PECA_PRI.Iniciar_Peca(rand()%7);
+					
+					PECA_PRI.Y = 14;
+					PECA_PRI.X = 5;
+					
 					Mostrar_Peca();
 				}
 		}

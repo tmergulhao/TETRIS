@@ -2,6 +2,7 @@ OBJECTS = peca.o metronomo.o tabuleiro.o
 SOURCES = ${OBJECTS,  .o=.c}
 HEADERS = ${OBJECTS,  .o=.h}
 SELF = ${@, .o=.c} ${@, .o=.h}
+COMPILER = g++
 
 TOPFLAGS = -lncurses
 
@@ -16,10 +17,10 @@ test: DFLAGS = -lcunit -fprofile-arcs -ftest-coverage
 test: compile-test run cover clean
 
 compile: main.o ${OBJECTS}
-	gcc $? ${TOPFLAGS} ${DFLAGS} -o compiled.out
+	${COMPILER} $? ${TOPFLAGS} ${DFLAGS} -o compiled.out
 
 compile-test: main.test.o ${OBJECTS}
-	gcc $? ${TOPFLAGS} ${DFLAGS} -o compiled.out
+	${COMPILER} $? ${TOPFLAGS} ${DFLAGS} -o compiled.out
 
 run:
 	./compiled.out
@@ -33,16 +34,16 @@ clean:
 	rm *.o *.out *.gcov *.gcda *.gcno
 
 main.o: main.c ${SOURCES} ${HEADERS}
-	gcc -c ${DFLAGS} main.c
+	${COMPILER} -c ${DFLAGS} main.c
 
 main.test.o: ${SELF} ${SOURCES} ${HEADERS}
-	gcc -c ${DFLAGS} main.test.c
+	${COMPILER} -c ${DFLAGS} main.test.c
 
 peca.o: ${SELF} main.h
-	gcc -c ${DFLAGS} peca.c
+	${COMPILER} -c ${DFLAGS} peca.c
 
 tabuleiro.o: ${SELF} main.h
-	gcc -c ${DFLAGS} tabuleiro.c
+	${COMPILER} -c ${DFLAGS} tabuleiro.c
 
 metronomo.o: ${SELF}
-	gcc -c ${DFLAGS} metronomo.c
+	${COMPILER} -c ${DFLAGS} metronomo.c

@@ -1,49 +1,20 @@
-#include <stdlib.h>
-
 #include "peca.h"
 #include "main.h"
 
-PECA* Chamar_Peca (int mode) {
-	static GUIA_PECAS INICIO;
-	PECA* PECA_ATUAL;
-
-	if (mode == -1) {
-		while (INICIO.ENTER) {
-			PECA_ATUAL = INICIO.ENTER;
-			INICIO.ENTER = INICIO.ENTER->NEXT;
-			free(PECA_ATUAL);
-		}
-		INICIO.ENTER = NULL;
-		return NULL;
-	}
-
-	if(INICIO.ENTER == NULL) {
-		INICIO.ENTER = (PECA*)malloc(sizeof(PECA));
-		INICIO.ENTER->NEXT = NULL;
-	}
-
-	PECA_ATUAL = INICIO.ENTER;
-
-	while (mode) {
-		if (PECA_ATUAL->NEXT) PECA_ATUAL = PECA_ATUAL->NEXT;
-		else {
-			PECA_ATUAL->NEXT = (PECA*)malloc(sizeof(PECA));
-			PECA_ATUAL = PECA_ATUAL->NEXT;
-			PECA_ATUAL->NEXT = NULL;
-		}
-		mode--;
+ClassPeca ClassPeca::operator= (ClassPeca param) {
+	ClassPeca temp;
+	temp.X = X;
+	temp.Y = Y;
+	for (int i = 0; i < 4; i++) {
+		temp.BLOCO[i].X = BLOCO[i].X;
+		temp.BLOCO[i].Y = BLOCO[i].Y;
 	}
 	
-	return PECA_ATUAL;
+	return (temp);
 }
-
-void Iniciar_Peca (int i, PECA* PECA_ATUAL) {
-	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
-	
-	PECA_ATUAL->Y = -1;
-	PECA_ATUAL->X = (CANVAS_WIDTH)/2;
-	
-	PECA_ATUAL = Chamar_Peca_Principal();
+void ClassPeca::Iniciar_Peca (int i) {
+	Y = -1;
+	X = (CANVAS_WIDTH)/2;
 	
 			BLOCO[0].X = 0;		BLOCO[0].Y = 0;
 	
@@ -88,17 +59,14 @@ void Iniciar_Peca (int i, PECA* PECA_ATUAL) {
 			break;
 	}
 }
-
-void Rotacionar_Peca (PECA* PECA_ATUAL) {
-	BLOCO_TIPO* BLOCO = PECA_ATUAL->BLOCO;
-	
-	int i, j, 
+void ClassPeca::Rotacionar_Peca () {
+	int j, 
 		x_max = -5,
 		y_max = -5, 
 		x_min = 5;
 	
 	// ROTATE AXIS
-	for (i = 0; i < 4; i++) {
+	for (int i = 0; i < 4; i++) {
 		j = BLOCO[i].Y;
 		BLOCO[i].Y = - BLOCO[i].X;
 		BLOCO[i].X = j;
@@ -110,9 +78,9 @@ void Rotacionar_Peca (PECA* PECA_ATUAL) {
 	}
 	
 	// SET ANY SHAPE TO FIT BASELINE
-	for (i = 0; i < 4; i++) BLOCO[i].Y -= y_max;
+	for (int i = 0; i < 4; i++) BLOCO[i].Y -= y_max;
 	
 	// SET ANY OTHER SHAPE TO CENTER X AXIS
 	j = ((x_max - x_min) == 3) ? 2 : 1;
-	for (i = 0; i < 4; i++) BLOCO[i].X -= (x_min + j);
+	for (int i = 0; i < 4; i++) BLOCO[i].X -= (x_min + j);
 }
