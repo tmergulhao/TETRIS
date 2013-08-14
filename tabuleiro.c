@@ -1,47 +1,40 @@
 #include "tabuleiro.h"
 
-#include <stdlib.h>
 #include <assert.h>
 
-TABULEIRO* Chamar_Tabuleiro () {
-	static TABULEIRO TABULEIRO_PRINCIPAL;
+#include <iostream>
+using namespace std;
+
+ClassTabuleiro::ClassTabuleiro () {
 	LINHA *LINHA_ATUAL;
 	
-	int i;
+	ENTER = LINHA_ATUAL = new (nothrow) LINHA[CANVAS_HEIGHT];
 	
-	if (!TABULEIRO_PRINCIPAL.ENTER) {
-		TABULEIRO_PRINCIPAL.ENTER = LINHA_ATUAL = (LINHA*)malloc(sizeof(LINHA));
-		
-		for (i = 0; i < CANVAS_HEIGHT - 1; i++) LINHA_ATUAL = LINHA_ATUAL->NEXT = (LINHA*)malloc(sizeof(LINHA));
-		
-		LINHA_ATUAL->NEXT = NULL;
+	for (int i = 0; i < CANVAS_HEIGHT - 1; i++) {
+		LINHA_ATUAL->NEXT = new (nothrow) LINHA[CANVAS_HEIGHT];
+		LINHA_ATUAL = LINHA_ATUAL->NEXT;
 	}
 	
-	return &TABULEIRO_PRINCIPAL;
+	LINHA_ATUAL->NEXT = NULL;
 }
-void Liberar_Tabuleiro () {
-	TABULEIRO *TABULEIRO_PRINCIPAL = Chamar_Tabuleiro();
-	LINHA *LINHA_LIBERAR;
+ClassTabuleiro::~ClassTabuleiro () {
+	LINHA *LINHA_ATUAL = ENTER;
 	
-	while (TABULEIRO_PRINCIPAL->ENTER) {
-		LINHA_LIBERAR = TABULEIRO_PRINCIPAL->ENTER;
-		
-		TABULEIRO_PRINCIPAL->ENTER = TABULEIRO_PRINCIPAL->ENTER->NEXT;
-		
-		free(LINHA_LIBERAR);
+	for (int i = 0; i < CANVAS_HEIGHT; i++) {
+		LINHA_ATUAL = ENTER;
+		ENTER = ENTER->NEXT;
+		delete LINHA_ATUAL;
 	}
-	TABULEIRO_PRINCIPAL->ENTER = NULL;
 }
-bool Reciclar_Linha (int y) {
-	TABULEIRO *TABULEIRO_PRINCIPAL = Chamar_Tabuleiro();
-	LINHA *LINHA_RECICLA, *LINHA_ATUAL = TABULEIRO_PRINCIPAL->ENTER;
+bool ClassTabuleiro::Reciclar_Linha (int y) {
+	LINHA *LINHA_RECICLA, *LINHA_ATUAL = ENTER;
 	
 	int i, j = 0;
 
 	assert(y < CANVAS_HEIGHT);
 	
 	if (y == 0) {
-		for (i = 0; i < CANVAS_WIDTH; i++) if (TABULEIRO_PRINCIPAL->ENTER->VALOR[i]) j++;
+		for (i = 0; i < CANVAS_WIDTH; i++) if (ENTER->VALOR[i]) j++;
 		if (j == CANVAS_WIDTH) 
 			for (i = 0; i < CANVAS_WIDTH; i++) LINHA_ATUAL->VALOR[i] = false;
 	} else  if (y > 0) {
@@ -55,8 +48,8 @@ bool Reciclar_Linha (int y) {
 		else return 0;
 		
 		LINHA_ATUAL->NEXT = LINHA_ATUAL->NEXT->NEXT;
-		LINHA_RECICLA->NEXT = TABULEIRO_PRINCIPAL->ENTER;
-		TABULEIRO_PRINCIPAL->ENTER = LINHA_RECICLA;
+		LINHA_RECICLA->NEXT = ENTER;
+		ENTER = LINHA_RECICLA;
 	} else {
 		for (j = 0; j < CANVAS_HEIGHT; j++) {
 			for (i = 0; i < CANVAS_WIDTH; i++) LINHA_ATUAL->VALOR[i] = false;
@@ -66,9 +59,8 @@ bool Reciclar_Linha (int y) {
 	
 	return 1;
 }
-bool Acessar_Bloco (int y, int x, bool mode) {
-	TABULEIRO *TABULEIRO_PRINCIPAL = Chamar_Tabuleiro();
-	LINHA *LINHA_ATUAL = TABULEIRO_PRINCIPAL->ENTER;
+bool ClassTabuleiro::Acessar_Bloco (int y, int x, bool mode) {
+	LINHA *LINHA_ATUAL = ENTER;
 
 	assert(y < CANVAS_HEIGHT);
 	assert(x < CANVAS_WIDTH);

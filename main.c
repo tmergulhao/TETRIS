@@ -36,6 +36,7 @@
 
 // Global Vars
 ClassPeca PECA_PRI;
+ClassTabuleiro TABULEIRO_PRI;
 int SCREEN_WIDTH, SCREEN_HEIGHT;
 
 void display_piece (int ON) {
@@ -104,18 +105,12 @@ void clean_menu_interface () {
 // SUB INTERFACES
 
 void Mostrar_Tabuleiro () {
-	TABULEIRO* TABULEIRO_PRINCIPAL = Chamar_Tabuleiro();
-	LINHA *LINHA_ATUAL = TABULEIRO_PRINCIPAL->ENTER;
-	
-	int i, j;
-	
-	for (i = 0; i < CANVAS_HEIGHT; i++) {
-		for (j = 0; j < CANVAS_WIDTH; j++) {
-			if (LINHA_ATUAL->VALOR[j]) 	mvaddstr((SCR_HEIGHT_ADD + i), (SCR_WIDTH_ADD + j*2), 	"[]");
-			else						mvaddstr((SCR_HEIGHT_ADD + i), (SCR_WIDTH_ADD + j*2), 	"  ");
-		}
-		LINHA_ATUAL = LINHA_ATUAL->NEXT;
-	}
+	for (int i = 0; i < CANVAS_HEIGHT; i++) 
+		for (int j = 0; j < CANVAS_WIDTH; j++) 
+			if (TABULEIRO_PRI.Valor_Bloco(i,j)) 
+				mvaddstr((SCR_HEIGHT_ADD + i), (SCR_WIDTH_ADD + j*2), 	"[]");
+			else
+				mvaddstr((SCR_HEIGHT_ADD + i), (SCR_WIDTH_ADD + j*2), 	"  ");
 }
 long Score(long i) {
 	static long score;
@@ -134,20 +129,19 @@ void Mover_Peca (int i) {
 	
 	for (j = 0; j < 4; j++) {
 		if (	!(BETWEEN(PECA_PRI.CoordX(j) + i, 0, CANVAS_WIDTH-1)) ||
-				Valor_Bloco(PECA_PRI.CoordY(j) , PECA_PRI.CoordX(j) + i)	) ALERT_INTERSECTION = true;
+				TABULEIRO_PRI.Valor_Bloco(PECA_PRI.CoordY(j) , PECA_PRI.CoordX(j) + i)	) ALERT_INTERSECTION = true;
 	}
 	
 	if (ALERT_INTERSECTION == false) PECA_PRI.X += i;
 }
 int Descer_Peca () {
-	
 	int i, LINES_WRAPPED = 0, min_y = 1;
 	
 	bool ALERT_INTERSECTION = false, ALERT_OVER = false, CHECK_LINES[4];
 	
 	if (PECA_PRI.Y < 19) { 
 		for (i = 0; i < 4; i++) {
-			if (Valor_Bloco(PECA_PRI.CoordY(i) + 1 , PECA_PRI.CoordX(i))) ALERT_INTERSECTION = true;
+			if (TABULEIRO_PRI.Valor_Bloco(PECA_PRI.CoordY(i) + 1 , PECA_PRI.CoordX(i))) ALERT_INTERSECTION = true;
 			if (PECA_PRI.CoordY(i) < 0) ALERT_OVER = true;
 		}
 		if (ALERT_INTERSECTION) {
@@ -161,13 +155,13 @@ int Descer_Peca () {
 	}
 	
 	for (i = 0; i < 4; i++) {
-		Inver_Bloco(PECA_PRI.CoordY(i) , PECA_PRI.CoordX(i));
+		TABULEIRO_PRI.Inver_Bloco(PECA_PRI.CoordY(i) , PECA_PRI.CoordX(i));
 		
 		CHECK_LINES[PECA_PRI.BLOCO[i].Y + 3] = true;
 	}
 	
 	for (i = 0; i < 4; i++) if(CHECK_LINES[i])
-		LINES_WRAPPED = (Reciclar_Linha(PECA_PRI.Y + i - 3)) ? LINES_WRAPPED+1 : LINES_WRAPPED;
+		LINES_WRAPPED = (TABULEIRO_PRI.Reciclar_Linha(PECA_PRI.Y + i - 3)) ? LINES_WRAPPED+1 : LINES_WRAPPED;
 	
 	PECA_PRI.Iniciar_Peca(rand()%7);
 	
@@ -177,19 +171,18 @@ int Descer_Peca () {
 }
 void Rotacionar_Peca_Check () {
 	bool ALERT_INTERSECTION = false, ALERT_INTERSECTION_LEFT = false, ALERT_INTERSECTION_RIGHT = false;
-	int i;
 	
 	ClassPeca PECA_ATUAL = PECA_PRI;
 	
 	PECA_ATUAL.Rotacionar_Peca();
 	
-	for (i = 0; i < 4; i++) {
+	for (int i = 0; i < 4; i++) {
 		if (!(BETWEEN(PECA_ATUAL.CoordX(i), 0, CANVAS_WIDTH-1)) ||
-			(Valor_Bloco(PECA_ATUAL.CoordY(i) , PECA_ATUAL.CoordX(i)))) ALERT_INTERSECTION = true;
+			(TABULEIRO_PRI.Valor_Bloco(PECA_ATUAL.CoordY(i) , PECA_ATUAL.CoordX(i)))) ALERT_INTERSECTION = true;
 		if (!(BETWEEN(PECA_ATUAL.CoordX(i)-1, 0, CANVAS_WIDTH-1)) ||
-			(Valor_Bloco(PECA_ATUAL.CoordY(i) , PECA_ATUAL.CoordX(i)-1))) ALERT_INTERSECTION_LEFT = true;
+			(TABULEIRO_PRI.Valor_Bloco(PECA_ATUAL.CoordY(i) , PECA_ATUAL.CoordX(i)-1))) ALERT_INTERSECTION_LEFT = true;
 		if (!(BETWEEN(PECA_ATUAL.CoordX(i)+1, 0, CANVAS_WIDTH-1)) ||
-			(Valor_Bloco(PECA_ATUAL.CoordY(i) , PECA_ATUAL.CoordX(i)+1))) ALERT_INTERSECTION_RIGHT = true;
+			(TABULEIRO_PRI.Valor_Bloco(PECA_ATUAL.CoordY(i) , PECA_ATUAL.CoordX(i)+1))) ALERT_INTERSECTION_RIGHT = true;
 	}
 
 	if (ALERT_INTERSECTION) {
@@ -230,7 +223,6 @@ void Finalizar_Modulos() {
 	while( !(Tempo_Espera()) && (getch()) != KEY_SPACE) {}
 	
 	// MEMORY FREE
-	Liberar_Tabuleiro();
 	Desligar_Espera();
 	
 	// NCURSES
@@ -312,7 +304,7 @@ void Jogar() {
 	
 	if (Score(0) == 0 || end == -1) {
 		PECA_PRI.Iniciar_Peca(rand()%7);
-		Reciclar_Tabul();
+		TABULEIRO_PRI.Reciclar_Tabul();
 		end = 0;
 	}
 	
@@ -370,13 +362,13 @@ int Testar_Interface() {
 	
 	set_frame();
 	
-	for (i = 0; i < CANVAS_HEIGHT; i++) for (j = 0; j < CANVAS_WIDTH; j++) Inver_Bloco(i,j);
+	for (i = 0; i < CANVAS_HEIGHT; i++) for (j = 0; j < CANVAS_WIDTH; j++) TABULEIRO_PRI.Inver_Bloco(i,j);
 	Mostrar_Tabuleiro();refresh();
 
 	metronomy(0.05,0);
 	for (i = 0; i < CANVAS_HEIGHT+1; i++) {
 		Mostrar_Tabuleiro();refresh();
-		Reciclar_Linha(19);
+		TABULEIRO_PRI.Reciclar_Linha(19);
 		while( !(Tempo_Espera()) && (getch()) != KEY_SPACE) {}
 	}
 	metronomy(4,0);

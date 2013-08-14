@@ -298,51 +298,51 @@ void Testar_Peca (void) {
 	CU_ADD_TEST(suite, Testar_Rotacionar_T);
 }
 
+ClassTabuleiro TABULEIRO_PRI;
+
 void Testar_Limpar_CLR_L () {
 	int i = rand()%(CANVAS_WIDTH - 1), k, j = rand()%CANVAS_HEIGHT;
 
-	for (k = 0; k < i; k++) Inver_Bloco(j,k);
-	Reciclar_Linha(j);
-	for (k = 0; k < i; k++) CU_ASSERT_TRUE(Valor_Bloco(j,k));
-	for (k = i; k < CANVAS_WIDTH; k++) CU_ASSERT_FALSE(Valor_Bloco(j,k));
+	for (k = 0; k < i; k++) TABULEIRO_PRI.Inver_Bloco(j,k);
+	TABULEIRO_PRI.Reciclar_Linha(j);
+	for (k = 0; k < i; k++) CU_ASSERT_TRUE(TABULEIRO_PRI.Valor_Bloco(j,k));
+	for (k = i; k < CANVAS_WIDTH; k++) CU_ASSERT_FALSE(TABULEIRO_PRI.Valor_Bloco(j,k));
 }
 
 void Testar_Limpar_ALL_L () {
 	int i, j;
-	for (j = 0; j < CANVAS_HEIGHT; j++) for (i = 0; i < CANVAS_WIDTH; i++) Inver_Bloco(j,i);
-	Reciclar_Linha(-1);
-	for (j = 0; j < CANVAS_HEIGHT; j++) for (i = 0; i < CANVAS_WIDTH; i++) CU_ASSERT_FALSE(Valor_Bloco(j,i));
+	for (j = 0; j < CANVAS_HEIGHT; j++) for (i = 0; i < CANVAS_WIDTH; i++) TABULEIRO_PRI.Inver_Bloco(j,i);
+	TABULEIRO_PRI.Reciclar_Linha(-1);
+	for (j = 0; j < CANVAS_HEIGHT; j++) for (i = 0; i < CANVAS_WIDTH; i++) CU_ASSERT_FALSE(TABULEIRO_PRI.Valor_Bloco(j,i));
 }
 
 void Testar_Limpar_NUM_L () {
 	int i, j = rand()%CANVAS_HEIGHT;
-	for (i = 0; i < CANVAS_WIDTH; i++) Inver_Bloco(j,i);
-	Reciclar_Linha(j);
-	for (i = 0; i < CANVAS_WIDTH; i++) CU_ASSERT_FALSE(Valor_Bloco(j,i));
+	for (i = 0; i < CANVAS_WIDTH; i++) TABULEIRO_PRI.Inver_Bloco(j,i);
+	TABULEIRO_PRI.Reciclar_Linha(j);
+	for (i = 0; i < CANVAS_WIDTH; i++) CU_ASSERT_FALSE(TABULEIRO_PRI.Valor_Bloco(j,i));
 }
 
 void Testar_Limpar_LAS_L () {
 	int i;
-	for (i = 0; i < CANVAS_WIDTH; i++) Inver_Bloco(CANVAS_HEIGHT-1,i);
-	Reciclar_Linha(CANVAS_HEIGHT-1);
-	for (i = 0; i < CANVAS_WIDTH; i++) CU_ASSERT_FALSE(Valor_Bloco(CANVAS_HEIGHT-1,i));
+	for (i = 0; i < CANVAS_WIDTH; i++) TABULEIRO_PRI.Inver_Bloco(CANVAS_HEIGHT-1,i);
+	TABULEIRO_PRI.Reciclar_Linha(CANVAS_HEIGHT-1);
+	for (i = 0; i < CANVAS_WIDTH; i++) CU_ASSERT_FALSE(TABULEIRO_PRI.Valor_Bloco(CANVAS_HEIGHT-1,i));
 }
 
 void Testar_Limpar_FIR_L () {
 	int i;
-	for (i = 0; i < CANVAS_WIDTH; i++) Inver_Bloco(0,i);
-	Reciclar_Linha(0);
-	for (i = 0; i < CANVAS_WIDTH; i++) CU_ASSERT_FALSE(Valor_Bloco(0,i));
+	for (i = 0; i < CANVAS_WIDTH; i++) TABULEIRO_PRI.Inver_Bloco(0,i);
+	TABULEIRO_PRI.Reciclar_Linha(0);
+	for (i = 0; i < CANVAS_WIDTH; i++) CU_ASSERT_FALSE(TABULEIRO_PRI.Valor_Bloco(0,i));
 }
 
 void Testar_Trocar_Captar_Valor () {
 	int i = rand()%CANVAS_WIDTH, j = rand()%CANVAS_HEIGHT;
-
-	Inver_Bloco(j,i);
-	CU_ASSERT_TRUE(Valor_Bloco(j,i));
-	Inver_Bloco(j,i);
-
-	Liberar_Tabuleiro();
+	
+	TABULEIRO_PRI.Inver_Bloco(j,i);
+	CU_ASSERT_TRUE(TABULEIRO_PRI.Valor_Bloco(j,i));
+	TABULEIRO_PRI.Inver_Bloco(j,i);
 }
 
 void Testar_Tabuleiro (void) {
@@ -356,8 +356,6 @@ void Testar_Tabuleiro (void) {
 	CU_ADD_TEST(suite, Testar_Limpar_NUM_L);
 	CU_ADD_TEST(suite, Testar_Limpar_ALL_L);
 	CU_ADD_TEST(suite, Testar_Limpar_CLR_L);
-
-	Liberar_Tabuleiro();
 }
 
 int main (int argc, char *argv[]) {

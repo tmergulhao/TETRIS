@@ -14,8 +14,6 @@
 				int X, Y;
 			} BLOCO[4];
 			
-			void Set(int j, int i);
-			
 			void Rotacionar_Peca ();
 			void Iniciar_Peca (int i);
 			
