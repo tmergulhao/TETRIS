@@ -1,16 +1,13 @@
 #include "peca.h"
 #include "main.h"
 
-ClassPeca ClassPeca::operator= (ClassPeca param) {
-	ClassPeca temp;
-	temp.X = X;
-	temp.Y = Y;
+void ClassPeca::operator= (ClassPeca param) {
+	X = param.X;
+	Y = param.Y;
 	for (int i = 0; i < 4; i++) {
-		temp.BLOCO[i].X = BLOCO[i].X;
-		temp.BLOCO[i].Y = BLOCO[i].Y;
+		BLOCO[i].X = param.BLOCO[i].X;
+		BLOCO[i].Y = param.BLOCO[i].Y;
 	}
-	
-	return (temp);
 }
 void ClassPeca::Iniciar_Peca (int i) {
 	Y = -1;

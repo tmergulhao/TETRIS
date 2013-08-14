@@ -33,7 +33,9 @@ void Testar_Rotacionar_T () {
 	int i;
 	bool ALERT_0, ALERT_1, ALERT_2, ALERT_3;
 	
-	PECA_ATUAL.Iniciar_Peca(5);
+	PECA_SEC.Iniciar_Peca(5);
+	
+	PECA_ATUAL = PECA_SEC;
 	
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
 	PECA_ATUAL.Rotacionar_Peca();
@@ -80,7 +82,9 @@ void Testar_Rotacionar_J () {
 	int i;
 	bool ALERT_0, ALERT_1, ALERT_2, ALERT_3;
 
-	PECA_ATUAL.Iniciar_Peca(2);
+	PECA_SEC.Iniciar_Peca(2);
+	
+	PECA_ATUAL = PECA_SEC;
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
 	PECA_ATUAL.Rotacionar_Peca();
@@ -127,7 +131,9 @@ void Testar_Rotacionar_L () {
 	int i;
 	bool ALERT_0, ALERT_1, ALERT_2, ALERT_3;
 
-	PECA_ATUAL.Iniciar_Peca(3);
+	PECA_SEC.Iniciar_Peca(3);
+	
+	PECA_ATUAL = PECA_SEC;
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
 	PECA_ATUAL.Rotacionar_Peca();
@@ -174,7 +180,9 @@ void Testar_Rotacionar_Z () {
 	int i;
 	bool ALERT_0, ALERT_1, ALERT_2, ALERT_3;
 
-	PECA_ATUAL.Iniciar_Peca(1);
+	PECA_SEC.Iniciar_Peca(1);
+	
+	PECA_ATUAL = PECA_SEC;
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
 	PECA_ATUAL.Rotacionar_Peca();
@@ -201,7 +209,9 @@ void Testar_Rotacionar_S () {
 	int i;
 	bool ALERT_0, ALERT_1, ALERT_2, ALERT_3;
 
-	PECA_ATUAL.Iniciar_Peca(0);
+	PECA_SEC.Iniciar_Peca(0);
+	
+	PECA_ATUAL = PECA_SEC;
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
 	PECA_ATUAL.Rotacionar_Peca();
@@ -228,7 +238,9 @@ void Testar_Rotacionar_I () {
 	int i;
 	bool ALERT_0, ALERT_1, ALERT_2, ALERT_3;
 
-	PECA_ATUAL.Iniciar_Peca(6);
+	PECA_SEC.Iniciar_Peca(6);
+	
+	PECA_ATUAL = PECA_SEC;
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
 	PECA_ATUAL.Rotacionar_Peca();
@@ -255,10 +267,12 @@ void Testar_Rotacionar_O () {
 	int i;
 	bool ALERT_0, ALERT_1, ALERT_2, ALERT_3;
 
-	PECA_ATUAL.Iniciar_Peca(4);
+	PECA_SEC.Iniciar_Peca(4);
+	
+	PECA_ATUAL = PECA_SEC;
 
 	ALERT_0 = ALERT_1 = ALERT_2 = ALERT_3 = false;
-	PECA_ATUAL.Rotacionar_Peca();
+	PECA_SEC.Rotacionar_Peca();
 	for (i = 0; i < 4; i++) {
 		if (PECA_ATUAL.BLOCO[i].X == 0 && PECA_ATUAL.BLOCO[i].Y == 0) ALERT_0 = (ALERT_0) ? false : true;
 		if (PECA_ATUAL.BLOCO[i].X == 0 && PECA_ATUAL.BLOCO[i].Y == -1) ALERT_1 = (ALERT_1) ? false : true;

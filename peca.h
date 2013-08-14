@@ -22,7 +22,7 @@
 			int CoordX (int i) {	return (X + BLOCO[i].X);	}
 			int CoordY (int i) {	return (Y + BLOCO[i].Y);	}
 			
-			ClassPeca operator = (ClassPeca);
+			void operator = (ClassPeca);
 	};
 
 #endif
