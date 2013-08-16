@@ -6,11 +6,16 @@
 		protected:
 			ClassPeca PECA_PRI;
 			ClassTabuleiro TABULEIRO_PRI;
+			ClassMetronomy TEMPO;
 		public:
+			bool Game_Play;
+			bool Game_Pause;
+			
 			ClassGame();
 			
-			void Mover_Peca (int i);
-			void Rotacionar_Peca_Check ();
+			void Events();
+			bool Mover_Peca (int i);
+			bool Rotacionar_Peca_Check ();
 			int Descer_Peca ();
 		friend class ClassCurses;
 	};

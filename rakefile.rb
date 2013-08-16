@@ -4,7 +4,12 @@ DFLAGS = ""
 MAINOBJ = 'main.o'
 DFLAGS << "-DNDEBUG "
 
-task :default => ['compiled.out','main.o']
+task :default => ['main.o','compiled.out'] do
+	sh "read null"
+	sh "./compiled.out"
+	
+	Rake::Task[:clean].invoke
+end
 
 task :test_set do
 	DFLAGS << "-fprofile-arcs " << "-ftest-coverage "

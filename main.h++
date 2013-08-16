@@ -4,6 +4,8 @@
 	#include <stdlib.h>
 	#include <time.h>
 	
+	#define KEY_SPACE			32
+	
 	// STRUCTURE DEFS
 	#define BETWEEN(X,DOWN,UP)	((X) >= (DOWN) && (X) <= (UP))
 	
