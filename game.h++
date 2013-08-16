@@ -17,6 +17,10 @@
 			bool Mover_Peca (int i);
 			bool Rotacionar_Peca_Check ();
 			int Descer_Peca ();
-		friend class ClassCurses;
+		#ifdef NCURSES
+			friend class ClassCurses;
+		#else
+			friend class ClassSDL;
+		#endif
 	};
 #endif

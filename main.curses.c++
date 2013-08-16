@@ -1,7 +1,7 @@
-#include <stdbool.h>
-
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_Image.h>
+#include <ncurses.h>
+#include <limits.h>
+#include <assert.h>
+#include <string.h>
 
 #include "main.h++"
 #include "peca.h++"
@@ -24,66 +24,51 @@
 #define NORM_MESSAGE		"- NOMAL +"
 #define EASY_MESSAGE		"- EASY +"
 
-class ClassSDL {
-		bool Running;
-		
-		SDL_Window* Window;
-		SDL_Renderer* Renderer;
-		
-		SDL_Texture* BlocksTexture;
-		SDL_Rect sourceRectangle;
-		SDL_Rect destinationRectangle;
-		
+class ClassCurses {
+		ClassGame* GAME;
 		ClassMetronomy TEMPO;
+		int SCREEN_WIDTH, SCREEN_HEIGHT;
 		
-		void Mostrar_Tabuleiro();
+		void Apagar_Peca();
+		void Mostrar_Peca();
+		void clrline (int);
+		void set_frame ();
+		void TurnMenu(int, bool);
+		void clean_menu_interface ();
+		void Mostrar_Tabuleiro ();
 	public:
-		ClassGame *GAME;
+		ClassCurses();
+		~ClassCurses();
 		
-		ClassSDL(const char *title, int xpos, int ypos, int width, int height, int flags);
-		~ClassSDL();
-		
-		void test();
-		bool running() { return Running; }
-		void render();
-		void update(){}
-		void handleEvents();
+		void Mostrar_Score();
+		int Testar_Interface(ClassGame *GAME_DUM);
+		int Capturar_Opcao(ClassGame *GAME_DUM);
+		void Render(ClassGame *GAME_DUM);
 };
-ClassSDL::ClassSDL (const char *title, int xpos, int ypos, int width, int height, int flags) {
-	if(SDL_Init(SDL_INIT_EVERYTHING) >= 0) {
-		Window = SDL_CreateWindow(title,
-								xpos,
-								ypos,
-								width, height,
-								flags);
-		
-		if(Window != 0) Renderer = SDL_CreateRenderer(Window, -1, 0);
-	}
+ClassCurses::ClassCurses() {
+	initscr(); 				// initiate
+	cbreak(); 				// direct input, no ENTER
+	noecho(); 				// nonverbose
+	keypad(stdscr, TRUE); 	// get special keystrokes
+	start_color(); 			// colors
+	timeout(0000); 			// miliseconds, timeout outset
+	curs_set(0);			// invisible cursor
 	
-	SDL_Surface* TempSurface = IMG_Load("assets/blocks.png");
-	BlocksTexture = SDL_CreateTextureFromSurface(Renderer, TempSurface);
-	SDL_FreeSurface(TempSurface);
-	// SDL_QueryTexture(BlocksTexture, NULL, NULL, &sourceRectangle.w, &sourceRectangle.h);
-	destinationRectangle.x = sourceRectangle.x = 30;
-	destinationRectangle.y = sourceRectangle.y = 30;
-	destinationRectangle.w = 30;
-	destinationRectangle.h = 30;
-	sourceRectangle.w = 30;
-	sourceRectangle.h = 30;
+	getmaxyx(stdscr,SCREEN_HEIGHT,SCREEN_WIDTH); // just in case you wonder: it's a MACRO
 	
-	Running = true;
+	// PHOSPHORUS TERMINAL GREEN
+	init_pair(1, COLOR_GREEN, COLOR_BLACK);
+	init_color(COLOR_GREEN, 0, 1000, 0);
+	attron(COLOR_PAIR(1));
 }
-ClassSDL::~ClassSDL () {
-	SDL_ShowSimpleMessageBox(1 , 
-						"TETRIS", 
-						"Thank you for playing TETRIS by Tiago Mergulhão.\n\nGo to tmergulhao.com/TETRIS for more info.",
-						Window);
+ClassCurses::~ClassCurses() {
+	clrline(0);
+	mvaddstr(SCR_HEIGHT_ADD+(20/2), CENTER(strlen(final_words)), final_words);
+	while(getch() != KEY_SPACE) {}
 	
-	SDL_DestroyWindow(Window);
-	SDL_DestroyRenderer(Renderer);
-	SDL_Quit();
+	endwin();
 }
-/*
+
 void ClassCurses::Mostrar_Score() {}
 void ClassCurses::Mostrar_Peca () {
 	for (int i = 0; i < 4; i++) 
@@ -214,34 +199,10 @@ int ClassCurses::Capturar_Opcao(ClassGame *GAME_DUM) {
 	}
 	return i;
 }
-void ClassCurses::Render (ClassGame *GAME_DUM) {
-	GAME = GAME_DUM;
-	
-	clear();
-	set_frame();
-	
-	Mostrar_Tabuleiro();
-	Mostrar_Peca();
-	
-	mvaddstr(SCR_HEIGHT_ADD - 1, CENTER(strlen(GAME_NAME)),GAME_NAME);
-	mvprintw(SCREEN_BOTTOM+1, CENTER(18),"%.18i", GAME->Game_Score);
-	assert(GAME->Game_Score < LONG_MAX - 120);
-	
-	if (!GAME->Game_Play) {
-		mvaddstr(SCR_HEIGHT_ADD-1, CENTER(strlen("+ GAME OVER +")),"+ GAME OVER +");
-	}
-	else if (GAME->Game_Pause) {
-		mvaddstr(SCR_HEIGHT_ADD-1, CENTER(strlen("+ PAUSED +")),"+ PAUSED +");
-	}
-	
-	refresh();
-}
-*/
-/*int ClassSDL::test(ClassGame *GAME_DUM) {
-	GAME = GAME_DUM;
+int ClassCurses::Testar_Interface(ClassGame *GAME_DUM) {
 	int ch;
 	
-	
+	GAME = GAME_DUM;
 	
 	if (SCREEN_HEIGHT < 22 || SCREEN_WIDTH < 22) return 0;
 	
@@ -313,77 +274,49 @@ void ClassCurses::Render (ClassGame *GAME_DUM) {
 		refresh();
 	}
 	return 1;
-}*/
-void ClassSDL::Mostrar_Tabuleiro () {
-	sourceRectangle.y = 30;
-	sourceRectangle.x = 6*30;
+}
+void ClassCurses::Render (ClassGame *GAME_DUM) {
+	GAME = GAME_DUM;
 	
-	for (int i = 0; i < CANVAS_HEIGHT; i++) for (int j = 0; j < CANVAS_WIDTH; j++) if (GAME->TABULEIRO_PRI.Valor_Bloco(i,j)) {
-				destinationRectangle.x = j*30;
-				destinationRectangle.y = i*30;
-				//sourceRectangle.x = ;
-				//sourceRectangle.y = ;
-				SDL_RenderCopy(Renderer, BlocksTexture, &sourceRectangle, &destinationRectangle);
+	clear();
+	set_frame();
+	
+	Mostrar_Tabuleiro();
+	Mostrar_Peca();
+	
+	mvaddstr(SCR_HEIGHT_ADD - 1, CENTER(strlen(GAME_NAME)),GAME_NAME);
+	mvprintw(SCREEN_BOTTOM+1, CENTER(18),"%.18i", GAME->Game_Score);
+	assert(GAME->Game_Score < LONG_MAX - 120);
+	
+	if (!GAME->Game_Play) {
+		mvaddstr(SCR_HEIGHT_ADD-1, CENTER(strlen("+ GAME OVER +")),"+ GAME OVER +");
 	}
+	else if (GAME->Game_Pause) {
+		mvaddstr(SCR_HEIGHT_ADD-1, CENTER(strlen("+ PAUSED +")),"+ PAUSED +");
+	}
+	
+	refresh();
 }
 
-void ClassSDL::test () {
-	for (int i = 0; i < CANVAS_HEIGHT; i++) for (int j = 0; j < CANVAS_WIDTH; j++) if (!(GAME->TABULEIRO_PRI.Valor_Bloco(i,j))) GAME->TABULEIRO_PRI.Inver_Bloco(i,j);
-	
-	TEMPO.SetTempo(0.1);
-	
-	for (int i = 0; i < CANVAS_HEIGHT && running(); ) {
-		if (TEMPO.Tempo() || i == 0) {
-			GAME->TABULEIRO_PRI.Reciclar_Linha(i);
-			i++;
-			SDL_RenderClear(Renderer);
-			Mostrar_Tabuleiro();
-			SDL_RenderPresent(Renderer);
-		}
-		
-		handleEvents(); 
-	}
-}
-void ClassSDL::render () {
-	SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 255); // RGBA
-	SDL_RenderClear(Renderer);
-	// Mostrar_Tabuleiro();
-	SDL_RenderPresent(Renderer);
-}
-void ClassSDL::handleEvents() {
-	SDL_Event event;
-	if (SDL_PollEvent(&event)) if (event.type == SDL_QUIT) Running = false;
-	//SDL_Delay(5);
-}
 int main (int argc, char *argv[]) {
-	ClassSDL 		*WINDOW = new ClassSDL ("TETRIS",
-											SDL_WINDOWPOS_CENTERED,
-											SDL_WINDOWPOS_UNDEFINED,
-											30 * 10,
-											30 * 20,
-											SDL_WINDOW_SHOWN);
 	ClassGame 		*GAME = new ClassGame;
+	ClassCurses 	*W_CURSES = new ClassCurses;
 	
-	WINDOW->GAME = GAME;
+	int i;
 	
-	WINDOW->test();
-	while (WINDOW->running()) {
-		WINDOW->handleEvents();
-		WINDOW->update();
-		WINDOW->render();
-	}
-	/*
-	while ((i = WINDOW->Capturar_Opcao(GAME)) != 3) {
+	W_CURSES->Testar_Interface(GAME);
+	
+	while ((i = W_CURSES->Capturar_Opcao(GAME)) != 3) {
 		if (i == 0) do {
 			GAME->Events();
-			WINDOW->Render(GAME);
+			W_CURSES->Render(GAME);
 		} while (!GAME->Game_Pause && GAME->Game_Play);
 		
-		if (i == 1) WINDOW->Mostrar_Score();
+		if (i == 1) W_CURSES->Mostrar_Score();
 	}
-	*/
+	
 	delete GAME;
-	delete WINDOW;
+	delete W_CURSES;
 	
 	return 0;
 }

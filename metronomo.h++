@@ -6,13 +6,13 @@
 	
 	class ClassMetronomy {
 			clock_t limit;
-			float tempo;
+			double tempo;
 		public:
 			float espera;
 			
 			bool Tempo ();
 			float ViewTempo () {return tempo;}
-			void SetTempo (float t);
+			void SetTempo (double t);
 			void FalseFire () {limit = clock() +  CLOCKS_PER_SEC * tempo;}
 			
 			ClassMetronomy ();
