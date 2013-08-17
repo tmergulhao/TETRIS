@@ -37,6 +37,7 @@ class ClassSDL {
 		ClassMetronomy TEMPO;
 		
 		void Mostrar_Tabuleiro();
+		void Mostrar_Peca();
 	public:
 		ClassGame *GAME;
 		
@@ -85,11 +86,6 @@ ClassSDL::~ClassSDL () {
 }
 /*
 void ClassCurses::Mostrar_Score() {}
-void ClassCurses::Mostrar_Peca () {
-	for (int i = 0; i < 4; i++) 
-		if (BETWEEN(GAME->PECA_PRI.CoordY(i),0,20) && BETWEEN(GAME->PECA_PRI.CoordX(i),0,9))
-			mvaddstr((SCR_HEIGHT_ADD + GAME->PECA_PRI.CoordY(i)), (SCR_WIDTH_ADD + (GAME->PECA_PRI.CoordX(i))*2), 	"[]");
-}
 void ClassCurses::Apagar_Peca () {
 	for (int i = 0; i < 4; i++) 
 		if (BETWEEN(GAME->PECA_PRI.CoordY(i),0,20) && BETWEEN(GAME->PECA_PRI.CoordX(i),0,9))
@@ -149,14 +145,6 @@ void ClassCurses::clean_menu_interface () {
 	clrline(SCREEN_BOTTOM - 1);
 	for(int i = 0; i < 5; i++)
 		clrline(SCR_HEIGHT_ADD+11+i);
-}
-void ClassCurses::Mostrar_Tabuleiro () {
-	for (int i = 0; i < CANVAS_HEIGHT; i++) 
-		for (int j = 0; j < CANVAS_WIDTH; j++) 
-			if (GAME->TABULEIRO_PRI.Valor_Bloco(i,j)) 
-				mvaddstr((SCR_HEIGHT_ADD + i), (SCR_WIDTH_ADD + j*2), 	"[]");
-			else
-				mvaddstr((SCR_HEIGHT_ADD + i), (SCR_WIDTH_ADD + j*2), 	"  ");
 }
 
 // INTERFACES EXTERNAS
@@ -326,12 +314,19 @@ void ClassSDL::Mostrar_Tabuleiro () {
 				SDL_RenderCopy(Renderer, BlocksTexture, &sourceRectangle, &destinationRectangle);
 	}
 }
-
+void ClassSDL::Mostrar_Peca () {
+	for (int i = 0; i < 4; i++) if (BETWEEN(GAME->PECA_PRI.CoordY(i),0,20) && BETWEEN(GAME->PECA_PRI.CoordX(i),0,9)) {
+		destinationRectangle.x = 30*GAME->PECA_PRI.CoordX(i);
+		destinationRectangle.y = 30*GAME->PECA_PRI.CoordY(i);
+		sourceRectangle.x = 2*30;
+		sourceRectangle.y = 30;
+		SDL_RenderCopy(Renderer, BlocksTexture, &sourceRectangle, &destinationRectangle);
+	}
+}
 void ClassSDL::test () {
 	for (int i = 0; i < CANVAS_HEIGHT; i++) for (int j = 0; j < CANVAS_WIDTH; j++) if (!(GAME->TABULEIRO_PRI.Valor_Bloco(i,j))) GAME->TABULEIRO_PRI.Inver_Bloco(i,j);
 	
 	TEMPO.SetTempo(0.1);
-	
 	for (int i = 0; i < CANVAS_HEIGHT && running(); ) {
 		if (TEMPO.Tempo() || i == 0) {
 			GAME->TABULEIRO_PRI.Reciclar_Linha(i);
@@ -340,19 +335,43 @@ void ClassSDL::test () {
 			Mostrar_Tabuleiro();
 			SDL_RenderPresent(Renderer);
 		}
-		
 		handleEvents(); 
+	}
+	TEMPO.SetTempo(5);
+	
+	SDL_RenderClear(Renderer);
+	GAME->PECA_PRI.Iniciar_Peca(rand()%7);
+	GAME->PECA_PRI.Y = 14;
+	GAME->PECA_PRI.X = 5;
+	Mostrar_Peca();
+	SDL_RenderPresent(Renderer);
+	
+	while (running()) {
+		if (TEMPO.Tempo()) {
+			GAME->Rotacionar_Peca_Check();
+			
+			SDL_RenderClear(Renderer);
+			Mostrar_Tabuleiro();
+			Mostrar_Peca();
+			SDL_RenderPresent(Renderer);
+		}
+		handleEvents();
 	}
 }
 void ClassSDL::render () {
-	SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 255); // RGBA
 	SDL_RenderClear(Renderer);
-	// Mostrar_Tabuleiro();
+	
+	SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 255); // RGBA
+	
+	Mostrar_Tabuleiro();
+	Mostrar_Peca();
+	
 	SDL_RenderPresent(Renderer);
 }
 void ClassSDL::handleEvents() {
 	SDL_Event event;
 	if (SDL_PollEvent(&event)) if (event.type == SDL_QUIT) Running = false;
+	
 	//SDL_Delay(5);
 }
 int main (int argc, char *argv[]) {
