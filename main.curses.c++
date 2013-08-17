@@ -25,25 +25,27 @@
 #define EASY_MESSAGE		"- EASY +"
 
 class ClassCurses {
-		ClassGame* GAME;
 		ClassMetronomy TEMPO;
 		int SCREEN_WIDTH, SCREEN_HEIGHT;
 		
-		void Apagar_Peca();
-		void Mostrar_Peca();
+		void Apagar_Peca(ClassGame*);
+		void Mostrar_Peca(ClassGame*);
+		void Mostrar_Tabuleiro (ClassGame*);
+		void TurnMenu(int, ClassGame*);
+		
 		void clrline (int);
 		void set_frame ();
-		void TurnMenu(int, bool);
 		void clean_menu_interface ();
-		void Mostrar_Tabuleiro ();
 	public:
 		ClassCurses();
 		~ClassCurses();
 		
-		void Mostrar_Score();
-		int Testar_Interface(ClassGame *GAME_DUM);
-		int Capturar_Opcao(ClassGame *GAME_DUM);
-		void Render(ClassGame *GAME_DUM);
+		void Mostrar_Score() {}
+		
+		int Testar_Interface(ClassGame*);
+		int Capturar_Opcao(ClassGame*);
+		void Render(ClassGame*);
+		void Events(ClassGame*);
 };
 ClassCurses::ClassCurses() {
 	initscr(); 				// initiate
@@ -68,14 +70,52 @@ ClassCurses::~ClassCurses() {
 	
 	endwin();
 }
+void ClassCurses::Events(ClassGame* GAME) {
+	int ch;
+	static bool render = true;
+	
+	GAME->Game_Pause = false;
+	if (!GAME->Game_Play) {
+		GAME->PECA_PRI.Iniciar_Peca(rand()%7);
+		GAME->TABULEIRO_PRI.Reciclar_Tabul();
+		GAME->Game_Score = 0;
+		GAME->Game_Play = true;
+	}
+	
+	while (!render && (ch = getch()) != KEY_SPACE) {
+		switch (ch) {
+			case KEY_UP:
+				render = GAME->Rotacionar_Peca_Check();
+				break;
+			case KEY_LEFT:
+				render = GAME->Mover_Peca(-1);
+				break;
+			case KEY_RIGHT:
+				render = GAME->Mover_Peca(+1);
+				break;
+			case KEY_DOWN:
+				GAME->Game_Score += (GAME->Descer_Peca())*60/((GAME->TEMPO.ViewTempo()));
+				GAME->TEMPO.FalseFire();
+				render = true;
+				break;
+			default:
+				if (GAME->TEMPO.Tempo()) {
+					GAME->Game_Score += (GAME->Descer_Peca())*60/(GAME->TEMPO.ViewTempo());
+					render = true;
+				}
+				break;
+		}
+	} if (ch == KEY_SPACE) GAME->Game_Pause = true;
+	
+	render = false;
+}
 
-void ClassCurses::Mostrar_Score() {}
-void ClassCurses::Mostrar_Peca () {
+void ClassCurses::Mostrar_Peca (ClassGame* GAME) {
 	for (int i = 0; i < 4; i++) 
 		if (BETWEEN(GAME->PECA_PRI.CoordY(i),0,20) && BETWEEN(GAME->PECA_PRI.CoordX(i),0,9))
 			mvaddstr((SCR_HEIGHT_ADD + GAME->PECA_PRI.CoordY(i)), (SCR_WIDTH_ADD + (GAME->PECA_PRI.CoordX(i))*2), 	"[]");
 }
-void ClassCurses::Apagar_Peca () {
+void ClassCurses::Apagar_Peca (ClassGame* GAME) {
 	for (int i = 0; i < 4; i++) 
 		if (BETWEEN(GAME->PECA_PRI.CoordY(i),0,20) && BETWEEN(GAME->PECA_PRI.CoordX(i),0,9))
 			mvaddstr((SCR_HEIGHT_ADD + GAME->PECA_PRI.CoordY(i)), (SCR_WIDTH_ADD + (GAME->PECA_PRI.CoordX(i))*2), 	"  ");
@@ -93,49 +133,44 @@ void ClassCurses::set_frame () {
 	mvaddstr(SCR_HEIGHT_ADD+20,SCR_WIDTH_ADD-1, "\\____________________/");
 	refresh();
 }
-void ClassCurses::TurnMenu (int i, bool ON) {
-	int LOCATION;
-	clrline(LOCATION = SCR_HEIGHT_ADD + 3 + i*4);
+void ClassCurses::TurnMenu (int i, ClassGame *GAME) {
+	clear();
+	set_frame();
 	
-	switch (i) {
-		case 0:
-			if (ON) mvaddstr(LOCATION,CENTER(strlen("+ PLAY +")), "+ PLAY +");
-			else mvaddstr(LOCATION,CENTER(strlen("PLAY")), "PLAY");
-			break;
-		case 1:
-			if (ON) mvaddstr(LOCATION,CENTER(strlen("+ SCORE +")), "+ SCORE +");
-			else mvaddstr(LOCATION,CENTER(strlen("SCORE")), "SCORE");
-			break;
-		case 3:
-			if (ON) mvaddstr(LOCATION,CENTER(strlen("+ EXIT +")), "+ EXIT +");
-			else if (i == 3) mvaddstr(LOCATION,CENTER(strlen("EXIT")), "EXIT");
-			break;
-		case 2:
-			if (ON) {
-				switch ((int)(10*GAME->TEMPO.ViewTempo())) {
-					case 3:
-						if (ON) mvaddstr(LOCATION,CENTER(strlen(SHAR_MESSAGE)), SHAR_MESSAGE);
-						break;
-					case 5:
-						if (ON) mvaddstr(LOCATION,CENTER(strlen(HARD_MESSAGE)), HARD_MESSAGE);
-						break;
-					case 10:
-						if (ON) mvaddstr(LOCATION,CENTER(strlen(NORM_MESSAGE)), NORM_MESSAGE);
-						break;
-					case 20:
-						if (ON) mvaddstr(LOCATION,CENTER(strlen(EASY_MESSAGE)), EASY_MESSAGE);
-						break;
-				}
-			} else mvaddstr(LOCATION,CENTER(strlen("TIMEOUT")), "TIMEOUT");
-			break;
-	}
+	if (i == 0) mvaddstr(SCR_HEIGHT_ADD + 3,CENTER(strlen("+ PLAY +")), "+ PLAY +");
+	else		mvaddstr(SCR_HEIGHT_ADD + 3,CENTER(strlen("PLAY")), "PLAY");
+	
+	if (i == 1) mvaddstr(SCR_HEIGHT_ADD + 3 + 4,CENTER(strlen("+ SCORE +")), "+ SCORE +");
+	else 		mvaddstr(SCR_HEIGHT_ADD + 3 + 4,CENTER(strlen("SCORE")), "SCORE");
+	
+	if (i == 3) mvaddstr(SCR_HEIGHT_ADD + 3 + 3*4,CENTER(strlen("+ EXIT +")), "+ EXIT +");
+	else		mvaddstr(SCR_HEIGHT_ADD + 3 + 3*4,CENTER(strlen("EXIT")), "EXIT");
+	
+	if (i == 2) {
+		switch ((int)(10*(GAME->TEMPO.ViewTempo()))) {
+			case 3:
+				mvaddstr(SCR_HEIGHT_ADD + 3 + 2*4,CENTER(strlen(SHAR_MESSAGE)), SHAR_MESSAGE);
+				break;
+			case 5:
+				mvaddstr(SCR_HEIGHT_ADD + 3 + 2*4,CENTER(strlen(HARD_MESSAGE)), HARD_MESSAGE);
+				break;
+			case 10:
+				mvaddstr(SCR_HEIGHT_ADD + 3 + 2*4,CENTER(strlen(NORM_MESSAGE)), NORM_MESSAGE);
+				break;
+			case 20:
+				mvaddstr(SCR_HEIGHT_ADD + 3 + 2*4,CENTER(strlen(EASY_MESSAGE)), EASY_MESSAGE);
+				break;
+		}
+	} else mvaddstr(SCR_HEIGHT_ADD + 3 + 2*4,CENTER(strlen("TIMEOUT")), "TIMEOUT");
+	
+	refresh();
 }
 void ClassCurses::clean_menu_interface () {
 	clrline(SCREEN_BOTTOM - 1);
 	for(int i = 0; i < 5; i++)
 		clrline(SCR_HEIGHT_ADD+11+i);
 }
-void ClassCurses::Mostrar_Tabuleiro () {
+void ClassCurses::Mostrar_Tabuleiro (ClassGame *GAME) {
 	for (int i = 0; i < CANVAS_HEIGHT; i++) 
 		for (int j = 0; j < CANVAS_WIDTH; j++) 
 			if (GAME->TABULEIRO_PRI.Valor_Bloco(i,j)) 
@@ -145,27 +180,21 @@ void ClassCurses::Mostrar_Tabuleiro () {
 }
 
 // INTERFACES EXTERNAS
-int ClassCurses::Capturar_Opcao(ClassGame *GAME_DUM) {
+int ClassCurses::Capturar_Opcao(ClassGame *GAME) {
 	int ch;
 	static int i;
-	GAME = GAME_DUM;
 	
-	clrline(0);
-	for (int j = 0; j < 4; j++) TurnMenu(j, false);
-							TurnMenu(i, true);
-	refresh();
+	TurnMenu(i, GAME);
 	
 	while ((ch = getch()) != KEY_SPACE) {
 		switch (ch) {
 			case KEY_UP:
-				TurnMenu(i, false);
 				i = (i == 0) ? 3 : (i-1)%4;
-				TurnMenu(i, true);
+				TurnMenu(i, GAME);
 				break;
 			case KEY_DOWN:
-				TurnMenu(i, false);
 				i = (i+1)%4;
-				TurnMenu(i, true);
+				TurnMenu(i, GAME);
 				break;
 			case KEY_RIGHT:
 				if (i != 2) break;
@@ -189,32 +218,32 @@ int ClassCurses::Capturar_Opcao(ClassGame *GAME_DUM) {
 							else if (ch == KEY_RIGHT)  GAME->TEMPO.SetTempo(1);
 							break;
 					}
-					TurnMenu(2, true);
+					TurnMenu(i, GAME);
 				}
 				break;
 			default:
 				if (TEMPO.Tempo()) mvaddstr(SCREEN_BOTTOM - 1,CENTER(strlen("SELECT WITH SPACE")), "SELECT WITH SPACE");
 		}
-		refresh();
 	}
 	return i;
 }
-int ClassCurses::Testar_Interface(ClassGame *GAME_DUM) {
+int ClassCurses::Testar_Interface(ClassGame *GAME) {
 	int ch;
-	
-	GAME = GAME_DUM;
 	
 	if (SCREEN_HEIGHT < 22 || SCREEN_WIDTH < 22) return 0;
 	
 	set_frame();
 	
 	for (int i = 0; i < CANVAS_HEIGHT; i++) for (int j = 0; j < CANVAS_WIDTH; j++) GAME->TABULEIRO_PRI.Inver_Bloco(i,j);
-	Mostrar_Tabuleiro();refresh();
+	
 	TEMPO.SetTempo(0.05);
-	for (int i = 0; i < CANVAS_HEIGHT+1; i++) {
-		Mostrar_Tabuleiro();refresh();
-		GAME->TABULEIRO_PRI.Reciclar_Linha(19);
-		while( !(TEMPO.Tempo()) && (getch()) != KEY_SPACE) {}
+	for (int i = 0; i < CANVAS_HEIGHT+1;) {
+		if( TEMPO.Tempo() || getch() == KEY_SPACE) {
+			Mostrar_Tabuleiro(GAME);
+			refresh();
+			i++;
+			GAME->TABULEIRO_PRI.Reciclar_Linha(19);
+		}
 	}
 	TEMPO.SetTempo(4);
 	
@@ -230,7 +259,7 @@ int ClassCurses::Testar_Interface(ClassGame *GAME_DUM) {
 	GAME->PECA_PRI.Iniciar_Peca(rand()%7);
 	GAME->PECA_PRI.Y = 14;
 	GAME->PECA_PRI.X = 5;
-	Mostrar_Peca();
+	Mostrar_Peca(GAME);
 	
 	refresh();
 	
@@ -240,7 +269,7 @@ int ClassCurses::Testar_Interface(ClassGame *GAME_DUM) {
 				clean_menu_interface();
 				mvaddstr(SCREEN_BOTTOM - 1,(SCREEN_WIDTH - strlen("UP"))/2, "UP");
 				GAME->PECA_PRI.Rotacionar_Peca();
-				Mostrar_Peca();
+				Mostrar_Peca(GAME);
 				break;
 			case KEY_DOWN:
 				clean_menu_interface();
@@ -267,7 +296,7 @@ int ClassCurses::Testar_Interface(ClassGame *GAME_DUM) {
 					GAME->PECA_PRI.Y = 14;
 					GAME->PECA_PRI.X = 5;
 					
-					Mostrar_Peca();
+					Mostrar_Peca(GAME);
 				}
 				break;
 		}
@@ -275,14 +304,12 @@ int ClassCurses::Testar_Interface(ClassGame *GAME_DUM) {
 	}
 	return 1;
 }
-void ClassCurses::Render (ClassGame *GAME_DUM) {
-	GAME = GAME_DUM;
-	
+void ClassCurses::Render (ClassGame *GAME) {
 	clear();
 	set_frame();
 	
-	Mostrar_Tabuleiro();
-	Mostrar_Peca();
+	Mostrar_Tabuleiro(GAME);
+	Mostrar_Peca(GAME);
 	
 	mvaddstr(SCR_HEIGHT_ADD - 1, CENTER(strlen(GAME_NAME)),GAME_NAME);
 	mvprintw(SCREEN_BOTTOM+1, CENTER(18),"%.18i", GAME->Game_Score);
@@ -308,7 +335,7 @@ int main (int argc, char *argv[]) {
 	
 	while ((i = W_CURSES->Capturar_Opcao(GAME)) != 3) {
 		if (i == 0) do {
-			GAME->Events();
+			W_CURSES->Events(GAME);
 			W_CURSES->Render(GAME);
 		} while (!GAME->Game_Pause && GAME->Game_Play);
 		

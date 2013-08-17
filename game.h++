@@ -13,10 +13,10 @@
 			
 			ClassGame();
 			
-			void Events();
-			bool Mover_Peca (int i);
+			bool Mover_Peca (int);
 			bool Rotacionar_Peca_Check ();
 			int Descer_Peca ();
+			
 		#ifdef NCURSES
 			friend class ClassCurses;
 		#else

@@ -4,52 +4,11 @@
 #include "game.h++"
 #include "main.h++"
 
-#include <ncurses.h>
-
 ClassGame::ClassGame () {
 	srand (time(NULL));
 	Game_Play = false;
 	Game_Pause = false;
 	Game_Score = 0;
-}
-void ClassGame::Events() {
-	int ch;
-	static bool render = true;
-	
-	Game_Pause = false;
-	if (!Game_Play) {
-		PECA_PRI.Iniciar_Peca(rand()%7);
-		TABULEIRO_PRI.Reciclar_Tabul();
-		Game_Score = 0;
-		Game_Play = true;
-	}
-	
-	while (!render && (ch = getch()) != KEY_SPACE) {
-		switch (ch) {
-			case KEY_UP:
-				render = Rotacionar_Peca_Check();
-				break;
-			case KEY_LEFT:
-				render = Mover_Peca(-1);
-				break;
-			case KEY_RIGHT:
-				render = Mover_Peca(+1);
-				break;
-			case KEY_DOWN:
-				Game_Score += Descer_Peca()*60/(TEMPO.ViewTempo());
-				TEMPO.FalseFire();
-				render = true;
-				break;
-			default:
-				if (TEMPO.Tempo()) {
-					Game_Score += Descer_Peca()*60/(TEMPO.ViewTempo());
-					render = true;
-				}
-				break;
-		}
-	} if (ch == KEY_SPACE) Game_Pause = true;
-	
-	render = false;
 }
 bool ClassGame::Mover_Peca (int i) {
 	bool ALERT_INTERSECTION = false;
