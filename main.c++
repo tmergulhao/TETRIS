@@ -8,6 +8,7 @@
 #include "metronomo.h++"
 #include "tabuleiro.h++"
 #include "game.h++"
+#include "textures.h++"
 
 #define SCR_WIDTH_ADD		(SCREEN_WIDTH - 22)/2 + 1
 #define SCR_HEIGHT_ADD		(SCREEN_HEIGHT - 22)/2 + 1
@@ -30,10 +31,6 @@ class ClassSDL {
 		SDL_Window* Window;
 		SDL_Renderer* Renderer;
 		
-		SDL_Texture* BlocksTexture;
-		SDL_Rect sourceRectangle;
-		SDL_Rect destinationRectangle;
-		
 		ClassMetronomy TEMPO;
 		
 		void Mostrar_Tabuleiro();
@@ -52,25 +49,15 @@ class ClassSDL {
 };
 ClassSDL::ClassSDL (const char *title, int xpos, int ypos, int width, int height, int flags) {
 	if(SDL_Init(SDL_INIT_EVERYTHING) >= 0) {
-		Window = SDL_CreateWindow(title,
-								xpos,
-								ypos,
-								width, height,
-								flags);
-		
+		Window = SDL_CreateWindow(	title,
+									xpos,
+									ypos,
+									width, height,
+									flags);
 		if(Window != 0) Renderer = SDL_CreateRenderer(Window, -1, 0);
 	}
 	
-	SDL_Surface* TempSurface = IMG_Load("assets/blocks.png");
-	BlocksTexture = SDL_CreateTextureFromSurface(Renderer, TempSurface);
-	SDL_FreeSurface(TempSurface);
-	// SDL_QueryTexture(BlocksTexture, NULL, NULL, &sourceRectangle.w, &sourceRectangle.h);
-	destinationRectangle.x = sourceRectangle.x = 30;
-	destinationRectangle.y = sourceRectangle.y = 30;
-	destinationRectangle.w = 30;
-	destinationRectangle.h = 30;
-	sourceRectangle.w = 30;
-	sourceRectangle.h = 30;
+	TEXTURES::instance()->load ("assets/blocks.png","blocks", Renderer);
 	
 	Running = true;
 }
@@ -302,25 +289,19 @@ void ClassCurses::Render (ClassGame *GAME_DUM) {
 	}
 	return 1;
 }*/
+
 void ClassSDL::Mostrar_Tabuleiro () {
-	sourceRectangle.y = 30;
-	sourceRectangle.x = 6*30;
-	
-	for (int i = 0; i < CANVAS_HEIGHT; i++) for (int j = 0; j < CANVAS_WIDTH; j++) if (GAME->TABULEIRO_PRI.Valor_Bloco(i,j)) {
-				destinationRectangle.x = j*30;
-				destinationRectangle.y = i*30;
-				//sourceRectangle.x = ;
-				//sourceRectangle.y = ;
-				SDL_RenderCopy(Renderer, BlocksTexture, &sourceRectangle, &destinationRectangle);
+	for (int i = 0; i < CANVAS_HEIGHT; i++)
+		for (int j = 0; j < CANVAS_WIDTH; j++) 
+			if (GAME->TABULEIRO_PRI.Valor_Bloco(i,j)) {
+				TEXTURES::instance()->drawframe("blocks",j*30,i*30,30,30,6,1,Renderer);
 	}
 }
 void ClassSDL::Mostrar_Peca () {
-	for (int i = 0; i < 4; i++) if (BETWEEN(GAME->PECA_PRI.CoordY(i),0,20) && BETWEEN(GAME->PECA_PRI.CoordX(i),0,9)) {
-		destinationRectangle.x = 30*GAME->PECA_PRI.CoordX(i);
-		destinationRectangle.y = 30*GAME->PECA_PRI.CoordY(i);
-		sourceRectangle.x = 2*30;
-		sourceRectangle.y = 30;
-		SDL_RenderCopy(Renderer, BlocksTexture, &sourceRectangle, &destinationRectangle);
+	for (int i = 0; i < 4; i++)
+		if (	BETWEEN(GAME->PECA_PRI.CoordY(i),0,20)
+			&& 	BETWEEN(GAME->PECA_PRI.CoordX(i),0,9)) {
+			TEXTURES::instance()->drawframe("blocks",30*GAME->PECA_PRI.CoordX(i),30*GAME->PECA_PRI.CoordY(i),30,30,2,1,Renderer);
 	}
 }
 void ClassSDL::test () {

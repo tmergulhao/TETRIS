@@ -1,4 +1,4 @@
-OBJECTS = ['game.o', 'peca.o', 'tabuleiro.o', 'metronomo.o']
+OBJECTS = ['game.o', 'peca.o', 'tabuleiro.o', 'metronomo.o', 'textures.o']
 TOPFLAGS = ""
 DFLAGS = ""
 
@@ -38,12 +38,12 @@ rule '.o' => '.c++' do |t|
 end
 
 file 'compiled.out' => OBJECTS do
-	sh "g++ *.o #{TOPFLAGS} #{DFLAGS} -o compiled.out"
+	sh "g++ *.o #{TOPFLAGS}#{DFLAGS}-o compiled.out"
 end
 
 file 'main.test.o' => ['main.test.c++', 'main.h++', 'game.h++', 'peca.h++', 'tabuleiro.h++', 'metronomo.h++']
 file 'main.curses.o' => ['main.curses.c++', 'main.h++', 'game.h++', 'peca.h++', 'tabuleiro.h++', 'metronomo.h++']
-file 'main.o' => ['main.test.c++', 'main.h++', 'game.h++', 'peca.h++', 'tabuleiro.h++', 'metronomo.h++']
+file 'main.o' => ['main.c++', 'main.h++', 'game.h++', 'peca.h++', 'tabuleiro.h++', 'metronomo.h++']
 file 'game.o' => ['main.h++', 'game.h++', 'game.c++']
 file 'peca.o' => ['main.h++', 'peca.h++', 'peca.c++']
 file 'tabuleiro.o' => ['main.h++', 'tabuleiro.h++', 'tabuleiro.c++']

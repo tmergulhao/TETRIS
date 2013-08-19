@@ -4,7 +4,9 @@
 	#include <stdlib.h>
 	#include <time.h>
 	
-	#define KEY_SPACE			32
+	#ifdef NCURSES
+		#define KEY_SPACE			32
+	#endif
 	
 	// STRUCTURE DEFS
 	#define BETWEEN(X,DOWN,UP)	((X) >= (DOWN) && (X) <= (UP))
