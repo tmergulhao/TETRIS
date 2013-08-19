@@ -9,10 +9,10 @@
 #include "tabuleiro.h++"
 #include "game.h++"
 
-#define SCR_WIDTH_ADD		(SCREEN_WIDTH - 22)/2 + 1
-#define SCR_HEIGHT_ADD		(SCREEN_HEIGHT - 22)/2 + 1
+#define SCR_WIDTH_ADD		(SCREEN_WIDTH - (CANVAS_WIDTH*2 + 2))/2 + 1
+#define SCR_HEIGHT_ADD		(SCREEN_HEIGHT - (CANVAS_HEIGHT + 2))/2 + 1
 #define CENTER(X)			SCR_WIDTH_ADD + (CANVAS_WIDTH*2 - (X))/2
-#define SCREEN_BOTTOM		SCR_HEIGHT_ADD + 19
+#define SCREEN_BOTTOM		SCR_HEIGHT_ADD + CANVAS_HEIGHT - 1
 
 #define GAME_NAME			"+ TETRIS +"
 #define DEV_MAIL			"me@tmergulhao.com"
@@ -65,7 +65,7 @@ ClassCurses::ClassCurses() {
 }
 ClassCurses::~ClassCurses() {
 	clrline(0);
-	mvaddstr(SCR_HEIGHT_ADD+(20/2), CENTER(strlen(final_words)), final_words);
+	mvaddstr(SCREEN_HEIGHT/2, CENTER(strlen(final_words)), final_words);
 	while(getch() != KEY_SPACE) {}
 	
 	endwin();
@@ -76,8 +76,8 @@ void ClassCurses::Events(ClassGame* GAME) {
 	
 	GAME->Game_Pause = false;
 	if (!GAME->Game_Play) {
-		GAME->PECA_PRI.Iniciar_Peca(rand()%7);
-		GAME->TABULEIRO_PRI.Reciclar_Tabul();
+		GAME->PECA_PRI.Iniciar_Peca();
+		GAME->TABULEIRO_PRI.Reciclar_Linha();
 		GAME->Game_Score = 0;
 		GAME->Game_Play = true;
 	}
@@ -112,25 +112,25 @@ void ClassCurses::Events(ClassGame* GAME) {
 
 void ClassCurses::Mostrar_Peca (ClassGame* GAME) {
 	for (int i = 0; i < 4; i++) 
-		if (BETWEEN(GAME->PECA_PRI.CoordY(i),0,20) && BETWEEN(GAME->PECA_PRI.CoordX(i),0,9))
+		if (BETWEEN(GAME->PECA_PRI.CoordY(i),0,CANVAS_HEIGHT-1) && BETWEEN(GAME->PECA_PRI.CoordX(i),0,CANVAS_WIDTH-1))
 			mvaddstr((SCR_HEIGHT_ADD + GAME->PECA_PRI.CoordY(i)), (SCR_WIDTH_ADD + (GAME->PECA_PRI.CoordX(i))*2), 	"[]");
 }
 void ClassCurses::Apagar_Peca (ClassGame* GAME) {
 	for (int i = 0; i < 4; i++) 
-		if (BETWEEN(GAME->PECA_PRI.CoordY(i),0,20) && BETWEEN(GAME->PECA_PRI.CoordX(i),0,9))
+		if (BETWEEN(GAME->PECA_PRI.CoordY(i),0,CANVAS_HEIGHT-1) && BETWEEN(GAME->PECA_PRI.CoordX(i),0,CANVAS_WIDTH-1))
 			mvaddstr((SCR_HEIGHT_ADD + GAME->PECA_PRI.CoordY(i)), (SCR_WIDTH_ADD + (GAME->PECA_PRI.CoordX(i))*2), 	"  ");
 }
 void ClassCurses::clrline (int i) {
 	if (i) mvaddstr(i, SCR_WIDTH_ADD, "                    ");
-	else for (i = 0; i<20; i++) clrline (SCR_HEIGHT_ADD + i); // CLEARS ALL GAME LINES 20*20
+	else for (i = 0; i < CANVAS_HEIGHT; i++) clrline (SCR_HEIGHT_ADD + i); // CLEARS ALL GAME LINES 20*20
 }
 void ClassCurses::set_frame () {
-	for (int i = 0; i < 20; i++) {
+	for (int i = 0; i < CANVAS_HEIGHT; i++) {
 		mvaddch(SCR_HEIGHT_ADD+i, SCR_WIDTH_ADD-1, '|');
-		mvaddch(SCR_HEIGHT_ADD+i, SCR_WIDTH_ADD-1+21, '|');
+		mvaddch(SCR_HEIGHT_ADD+i, SCR_WIDTH_ADD+CANVAS_WIDTH*2, '|');
 	}
 	mvaddstr(SCR_HEIGHT_ADD-1,SCR_WIDTH_ADD-1, "/¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\\");
-	mvaddstr(SCR_HEIGHT_ADD+20,SCR_WIDTH_ADD-1, "\\____________________/");
+	mvaddstr(SCR_HEIGHT_ADD+CANVAS_HEIGHT,SCR_WIDTH_ADD-1, "\\____________________/");
 	refresh();
 }
 void ClassCurses::TurnMenu (int i, ClassGame *GAME) {
@@ -256,7 +256,7 @@ int ClassCurses::Testar_Interface(ClassGame *GAME) {
 
 	mvaddstr(SCREEN_BOTTOM - 1, CENTER(strlen("USE ARROW KEYS")), "USE ARROW KEYS");
 	
-	GAME->PECA_PRI.Iniciar_Peca(rand()%7);
+	GAME->PECA_PRI.Iniciar_Peca();
 	GAME->PECA_PRI.Y = 14;
 	GAME->PECA_PRI.X = 5;
 	Mostrar_Peca(GAME);
@@ -291,7 +291,7 @@ int ClassCurses::Testar_Interface(ClassGame *GAME) {
 					clean_menu_interface();
 					mvaddstr(SCREEN_BOTTOM - 1,CENTER(strlen("SCAPE WITH SPACE")), "SCAPE WITH SPACE");
 					
-					GAME->PECA_PRI.Iniciar_Peca(rand()%7);
+					GAME->PECA_PRI.Iniciar_Peca();
 					
 					GAME->PECA_PRI.Y = 14;
 					GAME->PECA_PRI.X = 5;

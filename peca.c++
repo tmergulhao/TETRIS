@@ -15,7 +15,7 @@ void ClassPeca::Iniciar_Peca (int i) {
 	
 			BLOCO[0].X = 0;		BLOCO[0].Y = 0;
 	
-	switch (i) {
+	switch (i%7) {
 		case 0:
 			BLOCO[1].X = 0;		BLOCO[1].Y = -1;
 			BLOCO[2].X = -1;	BLOCO[2].Y = -1;
@@ -48,7 +48,7 @@ void ClassPeca::Iniciar_Peca (int i) {
 			BLOCO[2].X = -1;	BLOCO[2].Y = -1;
 			BLOCO[3].X = 1;		BLOCO[3].Y = -1;
 			break;
-		default:
+		case 6:
 			BLOCO[0].X = -1;
 			BLOCO[1].X = -1;	BLOCO[1].Y = -1;
 			BLOCO[2].X = -1;	BLOCO[2].Y = -2;

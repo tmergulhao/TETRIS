@@ -10,11 +10,6 @@
 #include "game.h++"
 #include "textures.h++"
 
-#define SCR_WIDTH_ADD		(SCREEN_WIDTH - 22)/2 + 1
-#define SCR_HEIGHT_ADD		(SCREEN_HEIGHT - 22)/2 + 1
-#define CENTER(X)			SCR_WIDTH_ADD + (CANVAS_WIDTH*2 - (X))/2
-#define SCREEN_BOTTOM		SCR_HEIGHT_ADD + 19
-
 #define GAME_NAME			"+ TETRIS +"
 #define DEV_MAIL			"me@tmergulhao.com"
 #define DEV_NAME			"Tiago Mergulhão"
@@ -24,6 +19,8 @@
 #define HARD_MESSAGE		"- HARD +"
 #define NORM_MESSAGE		"- NOMAL +"
 #define EASY_MESSAGE		"- EASY +"
+
+#define BLOCK_SIZE			30
 
 class ClassSDL {
 		bool Running;
@@ -294,14 +291,14 @@ void ClassSDL::Mostrar_Tabuleiro () {
 	for (int i = 0; i < CANVAS_HEIGHT; i++)
 		for (int j = 0; j < CANVAS_WIDTH; j++) 
 			if (GAME->TABULEIRO_PRI.Valor_Bloco(i,j)) {
-				TEXTURES::instance()->drawframe("blocks",j*30,i*30,30,30,6,1,Renderer);
+				TEXTURES::instance()->drawframe("blocks",j*BLOCK_SIZE,i*BLOCK_SIZE,BLOCK_SIZE,BLOCK_SIZE,6,1,Renderer);
 	}
 }
 void ClassSDL::Mostrar_Peca () {
 	for (int i = 0; i < 4; i++)
-		if (	BETWEEN(GAME->PECA_PRI.CoordY(i),0,20)
-			&& 	BETWEEN(GAME->PECA_PRI.CoordX(i),0,9)) {
-			TEXTURES::instance()->drawframe("blocks",30*GAME->PECA_PRI.CoordX(i),30*GAME->PECA_PRI.CoordY(i),30,30,2,1,Renderer);
+		if (	BETWEEN(GAME->PECA_PRI.CoordY(i),0,CANVAS_HEIGHT-1)
+			&& 	BETWEEN(GAME->PECA_PRI.CoordX(i),0,CANVAS_WIDTH-1)) {
+			TEXTURES::instance()->drawframe("blocks",BLOCK_SIZE*GAME->PECA_PRI.CoordX(i),BLOCK_SIZE*GAME->PECA_PRI.CoordY(i),BLOCK_SIZE,BLOCK_SIZE,2,1,Renderer);
 	}
 }
 void ClassSDL::test () {
@@ -321,9 +318,9 @@ void ClassSDL::test () {
 	TEMPO.SetTempo(5);
 	
 	SDL_RenderClear(Renderer);
-	GAME->PECA_PRI.Iniciar_Peca(rand()%7);
-	GAME->PECA_PRI.Y = 14;
-	GAME->PECA_PRI.X = 5;
+	GAME->PECA_PRI.Iniciar_Peca();
+	GAME->PECA_PRI.Y = CANVAS_HEIGHT*0.6;
+	GAME->PECA_PRI.X = CANVAS_WIDTH/2;
 	Mostrar_Peca();
 	SDL_RenderPresent(Renderer);
 	
@@ -359,8 +356,8 @@ int main (int argc, char *argv[]) {
 	ClassSDL 		*WINDOW = new ClassSDL ("TETRIS",
 											SDL_WINDOWPOS_CENTERED,
 											SDL_WINDOWPOS_UNDEFINED,
-											30 * 10,
-											30 * 20,
+											BLOCK_SIZE * CANVAS_WIDTH,
+											BLOCK_SIZE * CANVAS_HEIGHT,
 											SDL_WINDOW_SHOWN);
 	ClassGame 		*GAME = new ClassGame;
 	

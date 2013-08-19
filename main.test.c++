@@ -312,7 +312,7 @@ void Testar_Limpar_CLR_L () {
 void Testar_Limpar_ALL_L () {
 	int i, j;
 	for (j = 0; j < CANVAS_HEIGHT; j++) for (i = 0; i < CANVAS_WIDTH; i++) TABULEIRO_PRI.Inver_Bloco(j,i);
-	TABULEIRO_PRI.Reciclar_Linha(-1);
+	TABULEIRO_PRI.Reciclar_Linha();
 	for (j = 0; j < CANVAS_HEIGHT; j++) for (i = 0; i < CANVAS_WIDTH; i++) CU_ASSERT_FALSE(TABULEIRO_PRI.Valor_Bloco(j,i));
 }
 

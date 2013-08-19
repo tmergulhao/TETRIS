@@ -3,7 +3,7 @@
 #include "metronomo.h++"
 
 ClassMetronomy::ClassMetronomy () {
-	tempo = 2; // STANDART 2 SECOND
+	SetTempo();
 	limit = clock() +  CLOCKS_PER_SEC * tempo;
 }
 void ClassMetronomy::SetTempo (double t) {

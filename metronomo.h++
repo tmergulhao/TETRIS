@@ -12,7 +12,7 @@
 			
 			bool Tempo ();
 			float ViewTempo () {return tempo;}
-			void SetTempo (double t);
+			void SetTempo (double t = 2);
 			void FalseFire () {limit = clock() +  CLOCKS_PER_SEC * tempo;}
 			
 			ClassMetronomy ();

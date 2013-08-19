@@ -20,6 +20,6 @@
 			
 			bool Valor_Bloco (int y, int x);
 			bool Inver_Bloco (int y, int x);
-			bool Reciclar_Linha (int y);
+			bool Reciclar_Linha (int y = -1);
 	};
 #endif
