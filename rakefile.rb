@@ -35,7 +35,7 @@ task :clean do
 	sh "rm *.o *.out *.gcov *.gcda *.gcno"
 end
 
-file 'main.o' => ['main.c++', 'main.h++', 'game.o', 'peca.o', 'tabuleiro.o', 'metronomo.o', 'textures.o']
+file 'main.o' => ['main.c++', 'main.h++', 'game.o', 'peca.o', 'tabuleiro.o', 'metronomo.o', 'textures.o', 'input.o']
 file 'main.curses.o' => ['main.curses.c++', 'main.h++', 'game.o', 'peca.o', 'tabuleiro.o', 'metronomo.o']
 file 'main.test.o' => ['main.test.c++', 'main.h++', 'game.o', 'peca.o', 'tabuleiro.o', 'metronomo.o']
 
@@ -43,4 +43,7 @@ file 'game.o' => ['main.h++', 'game.h++', 'game.c++']
 file 'peca.o' => ['main.h++', 'peca.h++', 'peca.c++']
 file 'tabuleiro.o' => ['main.h++', 'tabuleiro.h++', 'tabuleiro.c++']
 
+file 'input.o' => ['input.h++', 'input.c++', 'metronomo.o']
+
 file 'metronomo.o' => ['metronomo.h++', 'metronomo.c++']
+file 'game.o' => ['input.h++', 'input.c++']
